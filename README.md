@@ -6,7 +6,7 @@ AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖�
 
 ## 快速开始
 
-需要 Node.js 20 或更高版本。**没有任何第三方依赖**，不需要 `npm install`。
+需要 Node.js 20 或更高版本。**内容构建没有任何第三方依赖**，不需要 `npm install`。
 
 ```bash
 node build/index.js
@@ -20,9 +20,16 @@ node build/index.js
   节点 23 个 · 边 35 条（前置 27 / 相关 8） · 领域 12 个 · 路径 4 条
   已写出 web/public/graph.json
   已写出 web/public/paths.json
+  已写出 web/public/content.json
 ```
 
 校验不通过时，构建**以非零码退出**，并打印可读的错误（见「构建失败长什么样」）。
+
+想看站点，接着起前端（这一步需要 `npm install`）：
+
+```bash
+cd web && npm install && npm run dev
+```
 
 ## 目录结构
 
@@ -43,21 +50,32 @@ build/
     schema-validator.js   JSON Schema 校验（报错是中文，字段级定位）
     load-content.js       扫描 content/、读取 schema
     graph.js              建图 + 跨文件检查（悬空 / 环 / 孤立 / 重复）
-    serialize.js          产出 graph.json / paths.json
+    serialize.js          产出 graph.json / paths.json / content.json
     problems.js           问题的统一表示与渲染
 test/                     单元测试 + 故意损坏的 fixture
-web/                      前端占位目录，见 web/README.md
+web/                      前端（Vite + React + TS），见 web/README.md
 ```
 
 ## 命令
 
+内容侧（零依赖）：
+
 | 命令 | 作用 |
 |---|---|
-| `node build/index.js` | 校验并写出 `web/public/graph.json` 和 `paths.json` |
+| `node build/index.js` | 校验并写出 `web/public/` 下的三个产物 |
 | `node build/index.js --check` | 只校验，不写文件（CI / pre-commit 用） |
 | `node build/index.js --quiet` | 只输出结论 |
 | `npm run build` / `npm run build:graph` | 同上（等价于第一条） |
-| `npm test` | 跑全部单元测试 |
+| `npm test` | 跑内容侧全部单元测试 |
+
+前端（在 `web/` 下）：
+
+| 命令 | 作用 |
+|---|---|
+| `npm run dev` | 本地开发服务器 |
+| `npm run build` | 类型检查 + 打包出纯静态的 `dist/` |
+| `npm run preview` | 预览 `dist/` |
+| `npm test` | 跑前端逻辑的单元测试 |
 
 ## 三层内容模型
 
@@ -196,11 +214,35 @@ updated_at: 2026-09-29
 
 - **`graph.json`** —— `nodes`（id / title / domain / summary / tags / prerequisites / related / sources / updated_at）、`edges`（`source` / `target` / `type`）、`domains`、`stats`。
 - **`paths.json`** —— 学习路径，步骤里已带 `title` 和 `domain`。
+- **`content.json`** —— L2/L3 正文，按节点 id 索引。三层卡片要渲染正文，而 `graph.json` 只有元数据
+  （L1 在 `summary` 里），所以正文单独出一份包，前端不必回头解析 Markdown 源文件。
 
 **边的方向**：`source -> target` 表示「先学 `source`，才能学 `target`」。
 所以「聚焦模式」要的依赖子图，是沿 `prerequisite` 边从目标节点**反向**遍历。
 
 字段细节和 JSON 样例见 `web/README.md`。
+
+## 前端
+
+`web/` 下是一个 **Vite + React + TypeScript** 的静态站点，消费上面三个产物。
+它把内容变成三件事：
+
+- **图谱视图**：按前置依赖分层排布的知识网络。缩放、平移、拖拽节点，节点按领域着色，
+  越基础的节点画得越大。布局是**确定性**的——同一份内容每次画出来都一样，刷新不会散架。
+- **三层卡片**：点开节点默认只露 L1 一句话，点「为什么重要」展开 L2、点「深入细节」展开 L3，
+  都在同一个面板里切换，不跳页。
+- **聚焦模式**：选中一个节点，沿依赖边反向算出完整的前置子图，其余淡化，并告诉你
+  「学会这个，你现在只需要看这 N 个节点」，按依赖顺序列出。这是把「一张吓人的大图」
+  变成「一条可执行的路径」的关键。
+
+另有路径视图（线性步骤 + 本地完成进度）、搜索（标题 / 标签 / L1 模糊匹配，键盘可选中）、
+亮暗主题（跟随系统 + 手动切换），以及窄屏下的列表降级。
+
+```bash
+cd web && npm install && npm run dev
+```
+
+细节、数据契约与实现取舍见 `web/README.md`。
 
 ## 测试
 
@@ -209,11 +251,14 @@ npm test
 ```
 
 覆盖：frontmatter 解析（含各种坏写法）、Schema 校验通过/失败、悬空依赖、循环依赖、孤立节点、
-重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构。
+重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构、L2/L3 正文包。
 
 其中 `test/fixtures/broken/` 是一个**故意写坏的内容仓库**，覆盖了上表里的每一类错误；
 测试会断言错误信息「指明了文件、字段和原因，且不含堆栈或英文断言」。真实内容仓库本身也被当作
 一个测试用例跑一遍。
+
+前端另有 `cd web && npm test`，覆盖依赖子图（对全部 23 个节点与暴力实现逐一比对）、依赖顺序、
+布局的确定性与分层、以及 L2/L3 的 Markdown 解析。
 
 ## 设计约束
 
