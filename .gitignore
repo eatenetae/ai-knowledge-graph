@@ -1,0 +1,7 @@
+# 构建产物：由 content/ 生成，不手工维护、不入库（见 README「内容即数据」）
+web/public/graph.json
+web/public/paths.json
+
+node_modules/
+.DS_Store
+*.log
