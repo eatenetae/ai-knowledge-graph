@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eatenetae/ai-knowledge-graph/schema/path.schema.json",
+  "title": "学习路径（frontmatter）",
+  "description": "content/paths/<id>.md 的 frontmatter 契约。路径是线性导航：按顺序走完 steps 即完成一条学习路线。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "summary", "audience", "steps", "updated_at"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "x-error": "必须是小写 kebab-case，例如 llm-app-developer",
+      "description": "稳定唯一标识，同时是文件名与路径 key。"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "x-error": "中文标题，2-40 个字符"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 100,
+      "x-error": "一句话说明这条路径从哪走到哪，10-100 个字符"
+    },
+    "audience": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 60,
+      "x-error": "这条路径写给谁看，2-60 个字符，例如「会写 Python、没接触过 AI 的后端工程师」"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 40,
+      "x-error": "步骤列表，至少 2 步、最多 40 步",
+      "description": "按学习顺序排列的节点引用。每一步的前置依赖应当出现在它之前。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "x-error": "步骤必须引用已存在的节点 id"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "x-error": "这一步的说明，2-120 个字符"
+          }
+        }
+      }
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "x-error": "必须是 YYYY-MM-DD 格式的日期"
+    }
+  }
+}

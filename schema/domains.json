@@ -1,0 +1,17 @@
+{
+  "$comment": "领域登记表。id 必须与 schema/node.schema.json 中 domain 的 enum 完全一致（构建期会校验一致性）。order 决定图谱中的分组顺序，label 是展示名。",
+  "domains": [
+    { "id": "foundations", "label": "基础概念", "order": 1 },
+    { "id": "neural-networks", "label": "神经网络", "order": 2 },
+    { "id": "transformer", "label": "Transformer", "order": 3 },
+    { "id": "llm-training", "label": "大模型训练", "order": 4 },
+    { "id": "prompting", "label": "提示工程", "order": 5 },
+    { "id": "retrieval", "label": "检索", "order": 6 },
+    { "id": "rag", "label": "RAG", "order": 7 },
+    { "id": "agents", "label": "智能体", "order": 8 },
+    { "id": "finetuning", "label": "微调", "order": 9 },
+    { "id": "evaluation", "label": "评估", "order": 10 },
+    { "id": "deployment", "label": "部署与推理", "order": 11 },
+    { "id": "safety", "label": "安全与对齐", "order": 12 }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eatenetae/ai-knowledge-graph/schema/node.schema.json",
+  "title": "知识点节点（frontmatter）",
+  "description": "content/<domain>/<id>.md 的 frontmatter 契约。L1 放在 summary，L2/L3 放在正文的 `## 直觉` / `## 细节` 两节。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "domain",
+    "summary",
+    "prerequisites",
+    "related",
+    "tags",
+    "sources",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "x-error": "必须是小写 kebab-case（小写字母、数字，用单个连字符分隔），例如 what-is-machine-learning",
+      "description": "稳定唯一标识。同时是文件名和图节点 key，一经使用不可更改。"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "x-error": "中文标题，2-40 个字符",
+      "description": "展示用中文标题。"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "foundations",
+        "neural-networks",
+        "transformer",
+        "llm-training",
+        "prompting",
+        "retrieval",
+        "rag",
+        "agents",
+        "finetuning",
+        "evaluation",
+        "deployment",
+        "safety"
+      ],
+      "x-error": "必须是 schema/domains.json 中登记的领域 id",
+      "description": "所属领域，决定节点在图谱中的分组与配色。"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 100,
+      "x-error": "L1 一句话，10-100 个字符，且必须零术语",
+      "description": "L1：一句话说清「是什么」，零术语，给完全的新手看。"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "x-error": "前置依赖必须是节点的 id（小写 kebab-case）"
+      },
+      "uniqueItems": true,
+      "maxItems": 8,
+      "x-error": "前置依赖 id 列表，最多 8 个，不可重复",
+      "description": "「学它之前需要先懂什么」。构成图谱的边，必须指向已存在的节点，且整体不可成环。"
+    },
+    "related": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "x-error": "相关节点必须是节点的 id（小写 kebab-case）"
+      },
+      "uniqueItems": true,
+      "maxItems": 8,
+      "x-error": "相关节点 id 列表，最多 8 个，不可重复",
+      "description": "弱关联，不构成学习路径约束，也不参与环检测。"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "uniqueItems": true,
+      "maxItems": 10,
+      "x-error": "自由标签列表，最多 10 个，不可重复",
+      "description": "自由标签，用于检索与筛选。"
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 10,
+      "x-error": "原始资料链接列表，最多 10 条",
+      "description": "原始资料（论文、官方文档），L3 引用它们。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "url"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "x-error": "资料标题，2-120 个字符"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://\\S+$",
+            "x-error": "必须是 http(s) 开头的完整链接",
+            "description": "原始资料链接。"
+          }
+        }
+      }
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "x-error": "必须是 YYYY-MM-DD 格式的日期",
+      "description": "最后更新日期。"
+    }
+  }
+}

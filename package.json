@@ -1,0 +1,16 @@
+{
+  "name": "ai-knowledge-graph",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖路径 + 持续更新",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build/index.js",
+    "build:graph": "node build/index.js",
+    "check": "node build/index.js --check",
+    "test": "node --test test/"
+  }
+}
