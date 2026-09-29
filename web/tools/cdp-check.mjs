@@ -4,11 +4,69 @@
  * 单元测试能覆盖依赖运算和布局，但覆盖不了「页面在浏览器里到底能不能跑起来」——
  * React 渲染、SVG 交互、主题切换、localStorage 这些都要真跑一次才算数。
  *
+ * 期望值一律从站点自己的 graph.json / paths.json / content.json 现算，
+ * 不写死节点数——内容会持续增长，写死规模的检查在内容一变就会假报警。
+ *
  * 用法：node tools/cdp-check.mjs <baseUrl>
  */
 
 const BASE = process.argv[2] ?? 'http://127.0.0.1:8733';
 const DEBUG_PORT = process.env.CDP_PORT ?? '9222';
+
+const [graphData, pathsData, contentData] = await Promise.all(
+  ['graph.json', 'paths.json', 'content.json'].map((name) =>
+    fetch(`${BASE}/${name}`).then((response) => {
+      if (!response.ok) throw new Error(`取不到 ${name}：${response.status}`);
+      return response.json();
+    }),
+  ),
+);
+
+const EXPECT = {
+  nodes: graphData.nodes.length,
+  edges: graphData.edges.length,
+  domains: graphData.domains.length,
+  paths: pathsData.paths.length,
+};
+
+/** 沿 prerequisite 边反向算依赖子图大小（含目标自身），用来核对面板上的「N 个节点」 */
+function focusSize(targetId) {
+  const byId = new Map(graphData.nodes.map((node) => [node.id, node]));
+  const seen = new Set([targetId]);
+  const stack = [targetId];
+  while (stack.length > 0) {
+    const id = stack.pop();
+    for (const prereq of byId.get(id)?.prerequisites ?? []) {
+      if (seen.has(prereq)) continue;
+      seen.add(prereq);
+      stack.push(prereq);
+    }
+  }
+  return seen.size;
+}
+
+/**
+ * 挑一个用来验证聚焦模式的节点：依赖子图至少三层，且 L3 里有代码块，
+ * 这样「多层递归」和「三层卡片」两类断言都不会落空。
+ */
+const focusTarget = graphData.nodes
+  .filter((node) => focusSize(node.id) >= 3)
+  .filter((node) => (contentData.nodes[node.id]?.l3 ?? '').includes('```'))
+  .map((node) => node.id)
+  .sort()[0];
+
+if (!focusTarget) {
+  throw new Error('内容里找不到「依赖子图 ≥ 3 层且 L3 有代码块」的节点，冒烟检查没法跑');
+}
+
+const FOCUS_SIZE = focusSize(focusTarget);
+
+// 搜索用聚焦目标的标题当关键词：它一定存在，且一定命中自己
+const SEARCH_QUERY = graphData.nodes.find((node) => node.id === focusTarget).title.slice(0, 3);
+console.log(
+  `数据规模：${EXPECT.nodes} 节点 / ${EXPECT.edges} 边 / ${EXPECT.domains} 领域 / ${EXPECT.paths} 路径` +
+    `；聚焦样本 ${focusTarget}（${FOCUS_SIZE} 个节点）\n`,
+);
 
 const targets = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json`).then((r) => r.json());
 const page = targets.find((target) => target.type === 'page');
@@ -106,9 +164,9 @@ const graph = await evaluate(`
   };
 `);
 
-check('图谱渲染出 23 个节点', graph.count === 23, `实际 ${graph.count}`);
-check('前置边与相关边都画了出来', graph.edges === 35, `实际 ${graph.edges}`);
-check('12 个领域都有图例', graph.legendItems === 12, `实际 ${graph.legendItems}`);
+check(`图谱渲染出全部 ${EXPECT.nodes} 个节点`, graph.count === EXPECT.nodes, `实际 ${graph.count}`);
+check('前置边与相关边都画了出来', graph.edges === EXPECT.edges, `实际 ${graph.edges}`);
+check(`全部 ${EXPECT.domains} 个领域都有图例`, graph.legendItems === EXPECT.domains, `实际 ${graph.legendItems}`);
 
 const graphCenterX = (graph.spanX[0] + graph.spanX[1]) / 2;
 const svgCenterX = graph.svg.x + graph.svg.w / 2;
@@ -134,7 +192,7 @@ check(
 );
 
 // ---- 聚焦模式 ----
-await goto('#/n/transformer');
+await goto(`#/n/${focusTarget}`);
 await wait(900);
 
 const focus = await evaluate(`
@@ -158,15 +216,44 @@ const focus = await evaluate(`
 check('点开节点后卡片出现', focus.panelOpen);
 check('默认只露 L1，L2/L3 都没展开', !focus.l2Visible && !focus.l3Visible);
 check('L1 是一句话', focus.l1.length > 10 && focus.l1.length <= 100, `${focus.l1.length} 字`);
-check('聚焦模式算出 6 个节点', /6\s*个节点/.test(focus.headline), focus.headline);
-check('依赖子图外的节点被淡化', focus.dimmed === 17, `淡化了 ${focus.dimmed} 个（23-6=17）`);
+check(
+  `聚焦模式算出 ${FOCUS_SIZE} 个节点`,
+  focus.headline.includes(`${FOCUS_SIZE} 个节点`),
+  focus.headline,
+);
+check(
+  '依赖子图外的节点被淡化',
+  focus.dimmed === EXPECT.nodes - FOCUS_SIZE,
+  `淡化了 ${focus.dimmed} 个（${EXPECT.nodes}-${FOCUS_SIZE}=${EXPECT.nodes - FOCUS_SIZE}）`,
+);
 check('目标节点被选中', focus.selected === 1);
 check('目标节点在列表里带「目标」标记', focus.badgeCount === 1);
+// 顺序检查卡的是**性质**而不是某几个具体节点：把面板上渲染出来的标题映射回 id，
+// 再逐条核对「每个节点的前置都排在它前面」。写死「A 在 B 前面」的检查
+// 换个聚焦目标就失效，而性质检查对任何节点、任何内容规模都成立。
+const titleToId = new Map(graphData.nodes.map((node) => [node.title, node.id]));
+const prereqsById = new Map(graphData.nodes.map((node) => [node.id, node.prerequisites]));
+const renderedIds = focus.steps.map((title) => titleToId.get(title));
+const positionOf = new Map(renderedIds.map((id, index) => [id, index]));
+
+const orderViolations = [];
+for (const id of renderedIds) {
+  for (const prereq of prereqsById.get(id) ?? []) {
+    if (positionOf.has(prereq) && positionOf.get(prereq) > positionOf.get(id)) {
+      orderViolations.push(`${prereq} 排在了 ${id} 后面`);
+    }
+  }
+}
+
 check(
-  '依赖顺序：attention 排在 transformer 前，embedding 排在 attention 前',
-  focus.steps.indexOf('注意力机制') < focus.steps.indexOf('Transformer') &&
-    focus.steps.indexOf('词嵌入') < focus.steps.indexOf('注意力机制'),
-  focus.steps.join(' → '),
+  '聚焦列表覆盖整个依赖子图',
+  renderedIds.length === FOCUS_SIZE && renderedIds.every(Boolean),
+  `列表 ${renderedIds.length} 项 / 子图 ${FOCUS_SIZE} 个`,
+);
+check(
+  '依赖顺序：每个节点的前置都排在它前面',
+  orderViolations.length === 0,
+  orderViolations.slice(0, 3).join(' | ') || focus.steps.join(' → '),
 );
 
 // ---- 三层卡片展开（不跳页） ----
@@ -204,7 +291,7 @@ check('卡片仍然开着', expanded.panelStillOpen);
 const searchResult = await evaluate(`
   const input = document.querySelector('.search-input');
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-  setter.call(input, '注意力');
+  setter.call(input, ${JSON.stringify(SEARCH_QUERY)});
   input.dispatchEvent(new Event('input', { bubbles: true }));
   input.focus();
   return true;
@@ -219,7 +306,11 @@ const searched = await evaluate(`
     active: document.querySelector('.search-results .is-active .hit-title')?.textContent ?? '',
   };
 `);
-check('搜索有结果', searched.count > 0, `${searched.count} 条，首条「${searched.first}」`);
+check(
+  '搜索有结果',
+  searched.count > 0 && searched.first.includes(SEARCH_QUERY),
+  `搜「${SEARCH_QUERY}」得 ${searched.count} 条，首条「${searched.first}」`,
+);
 check('搜索首条高亮（键盘可选中）', searched.active === searched.first, `高亮「${searched.active}」`);
 check('搜索确实执行了', searchResult === true);
 
@@ -247,7 +338,7 @@ const paths = await evaluate(`
     hasProgress: Boolean(document.querySelector('.path-progress-bar')),
   };
 `);
-check('4 条学习路径', paths.tabs === 4, `实际 ${paths.tabs}`);
+check(`${EXPECT.paths} 条学习路径`, paths.tabs === EXPECT.paths, `实际 ${paths.tabs}`);
 check('路径渲染成线性步骤', paths.steps >= 2, `${paths.steps} 步`);
 check('每步显示标题与 L1 一句话', paths.firstTitle.length > 0 && paths.firstSummary.length > 5);
 check('有完成进度条', paths.hasProgress);
@@ -263,10 +354,13 @@ const toggled = await evaluate(`
     stored: localStorage.getItem('akg:progress') ?? '',
   };
 `);
+// 存进去的 key 必须是**当前选中路径**的 id，而不是某条写死的路径。
+// 用标题反查 id，这样换默认路径、加新路径都不会让这条检查失真。
+const activePathId = pathsData.paths.find((path) => path.title === toggled.activePath)?.id;
 check(
   '勾选步骤写进本地存储',
-  toggled.checked && toggled.stored.includes(toggled.activePath === '构建 AI 智能体' ? 'build-ai-agent' : 'llm-app-developer'),
-  `${toggled.activePath} -> ${toggled.stored}`,
+  toggled.checked && Boolean(activePathId) && toggled.stored.includes(activePathId),
+  `${toggled.activePath}（${activePathId ?? '未知路径'}）-> ${toggled.stored}`,
 );
 
 // ---- 从路径跳回图谱 ----
@@ -302,7 +396,7 @@ check('主题选择被记住', storedMode === 'system', `localStorage = ${stored
 await evaluate(`localStorage.setItem('akg:theme', 'dark'); return true;`);
 await send('Page.reload');
 await wait(1500);
-await goto('#/n/attention');
+await goto(`#/n/${focusTarget}`);
 await wait(700);
 
 await evaluate(`document.querySelectorAll('.layer-tab').forEach((tab) => tab.click()); return true;`);
@@ -332,7 +426,7 @@ await send('Emulation.setDeviceMetricsOverride', {
   deviceScaleFactor: 2,
   mobile: true,
 });
-await goto('#/n/rag');
+await goto(`#/n/${focusTarget}`);
 await wait(900);
 
 const mobile = await evaluate(`
@@ -351,7 +445,7 @@ const mobile = await evaluate(`
 check('窄屏换成列表降级', mobile.listShown && mobile.svgHidden);
 check(
   '窄屏列表跟随聚焦模式，只列依赖子图',
-  mobile.focusedItems === 12 && /12\s*个节点/.test(mobile.headline),
+  mobile.focusedItems === FOCUS_SIZE && mobile.headline.includes(`${FOCUS_SIZE} 个节点`),
   `列表 ${mobile.focusedItems} 项 / ${mobile.headline}`,
 );
 check('窄屏下三层卡片仍可用', mobile.panelOpen && mobile.l1 > 10);
@@ -365,8 +459,8 @@ const unfocused = await evaluate(`
   };
 `);
 check(
-  '关掉聚焦模式后列表恢复全部 23 个节点',
-  unfocused.items === 23 && unfocused.groups === 12,
+  `关掉聚焦模式后列表恢复全部 ${EXPECT.nodes} 个节点`,
+  unfocused.items === EXPECT.nodes && unfocused.groups === EXPECT.domains,
   `${unfocused.items} 项 / ${unfocused.groups} 组`,
 );
 

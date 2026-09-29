@@ -4,11 +4,13 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { joinLines, parseBlocks } from '../src/lib/markdown.ts';
-import type { ContentJson } from '../src/types.ts';
+import type { ContentJson, GraphJson } from '../src/types.ts';
 
-const content: ContentJson = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', 'public', 'content.json'), 'utf8'),
-);
+const readArtifact = <T,>(name: string): T =>
+  JSON.parse(readFileSync(join(import.meta.dirname, '..', 'public', name), 'utf8')) as T;
+
+const content = readArtifact<ContentJson>('content.json');
+const graph = readArtifact<GraphJson>('graph.json');
 
 describe('块级解析', () => {
   it('围栏代码块整段保留，语言标注不丢', () => {
@@ -75,8 +77,14 @@ describe('块级解析', () => {
 describe('真实内容：每个节点的 L2/L3 都能解析出块', () => {
   const ids = Object.keys(content.nodes);
 
-  it('23 个节点的正文都解析出了内容', () => {
-    assert.equal(ids.length, 23);
+  it('content.json 与 graph.json 的节点集合完全一致', () => {
+    // 不写死节点数：内容会持续增长，这里要卡的是「两份产物没有对不上」，
+    // 而不是「内容正好有 N 个节点」。
+    assert.deepEqual([...ids].sort(), graph.nodes.map((node) => node.id).sort());
+    assert.equal(content.node_count, ids.length);
+  });
+
+  it('每个节点的正文都解析出了内容', () => {
     for (const id of ids) {
       const entry = content.nodes[id];
       assert.ok(parseBlocks(entry.l2).length > 0, `${id} 的 L2 解析不出块`);
