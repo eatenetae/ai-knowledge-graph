@@ -2,7 +2,7 @@
 id: lora
 title: LoRA
 domain: finetuning
-summary: 不碰原模型，只在旁边挂一小块可训练的参数，就能达到接近全量微调的效果。
+summary: 不改动原来的模型，只在旁边加一小块新数字来训练，效果接近把整个模型重训一遍。
 prerequisites:
   - fine-tuning
 related:
