@@ -1,0 +1,171 @@
+# 校验 → 构建 → 发布。
+#
+# 四层检查串成一条链，发布挂在链子最末端：
+#
+#   content ──▶ web ──▶ smoke ──▶ deploy
+#
+# 任何一层失败，后面的 job 根本不会开始（`needs` 是硬依赖），所以「校验没过的产物
+# 被发布出去」在结构上就不可能发生 —— 不需要在发布脚本里再写一遍「先检查再发布」。
+#
+# 三层测试都要跑起来，缺一层都算没配完：
+#   · 内容侧单元测试（build 管线、Schema、图的完整性）
+#   · 前端单元测试（依赖运算、布局、Markdown 解析）
+#   · 真实浏览器冒烟（React 渲染、SVG 交互、主题、localStorage —— 单元测试够不着的那一层）
+#
+# Node 版本：内容构建本身只要 20+，但冒烟脚本用了全局 WebSocket（Node 22.4 起默认可用），
+# 所以统一钉在 22，免得两个 job 跑在不同版本上。
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 最小权限；需要写权限的只有 deploy 一个 job，它自己单独声明
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  content:
+    name: 内容校验与测试
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # 内容侧零依赖：构建管线只用 Node 内置模块，不需要 npm install
+      - name: 内容单元测试
+        run: npm test
+
+      # 先只校验、不写文件：校验不过就停在这里，产物一个都不落盘
+      - name: 内容校验
+        run: node build/index.js --check
+
+      - name: 产出图数据
+        run: node build/index.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content-artifacts
+          path: web/public/*.json
+          retention-days: 1
+
+  web:
+    name: 前端测试与构建
+    runs-on: ubuntu-latest
+    needs: content
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+        working-directory: web
+
+      # 前端消费的三个 JSON 是构建产物、不入库，从上一个 job 取回来
+      - uses: actions/download-artifact@v4
+        with:
+          name: content-artifacts
+          path: web/public
+
+      - name: 前端单元测试
+        run: npm test
+        working-directory: web
+
+      # npm run build = tsc --noEmit + vite build，类型不过就不出产物
+      - name: 类型检查并打包
+        run: npm run build
+        working-directory: web
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: web/dist
+          retention-days: 1
+
+  smoke:
+    name: 真实浏览器冒烟
+    runs-on: ubuntu-latest
+    needs: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: web/dist
+
+      # ubuntu runner 自带 Chrome，但装一个固定的稳定版更可控
+      - name: 装 Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      # 冒烟脚本自己起静态服务器、自己拉无头浏览器，本地跑的也是这一条命令
+      - name: 跑冒烟检查
+        run: node web/tools/smoke.mjs --dist web/dist
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+
+  deploy:
+    name: 发布到 GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [content, web, smoke]
+
+    # 只在主分支上发布，且必须走完上面全部检查。
+    #
+    # PAGES_ENABLED 是一次性开关，见 CONTRIBUTING.md「发布」一节：
+    # 私有仓库要先让仓库可发布（仓库转公开，或升级到支持私有 Pages 的套餐），
+    # 再在 Settings → Pages 把 Source 选成 GitHub Actions，最后把这个仓库变量置 true。
+    # 没开之前 deploy 直接跳过，主分支不至于为一件还没拍板的事长期挂红。
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.PAGES_ENABLED == 'true'
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: 发布
+        id: deployment
+        uses: actions/deploy-pages@v4

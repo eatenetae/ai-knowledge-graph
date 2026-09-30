@@ -2,7 +2,19 @@
 
 AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖路径 + 持续更新。
 
+[![CI](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml)
+
+## 线上地址
+
+**https://eatenetae.github.io/ai-knowledge-graph/**
+
+> 首次发布需要一次性启用 GitHub Pages（私有仓库需要付费套餐或转公开）。启用步骤见
+> [CONTRIBUTING.md → 首次启用发布](CONTRIBUTING.md#首次启用发布)。**启用之前这个地址打不开**——
+> CI 已经配好，开关一开，推送到 `main` 就会自动构建并发布。
+
 **内容即数据。** 每个知识点就是 `content/` 下的一个 Markdown 文件，图谱、索引、学习路径全部由构建期自动生成。没有数据库，没有手工维护的大图。
+
+想往图谱里加东西？直接看 **[CONTRIBUTING.md](CONTRIBUTING.md)**——这份 README 讲这个项目是什么，那份讲你怎么改它。
 
 ## 快速开始
 
@@ -54,6 +66,12 @@ build/
     problems.js           问题的统一表示与渲染
 test/                     单元测试 + 故意损坏的 fixture
 web/                      前端（Vite + React + TS），见 web/README.md
+docs/
+  content-patrol.md       内容巡检流程：扫什么、按什么标准筛、产出成什么样
+.github/workflows/
+  ci.yml                  校验 → 构建 → 浏览器冒烟 → 发布
+CONTRIBUTING.md           怎么改这个项目（新增节点 / 路径 / 依赖怎么定 / 报错怎么办）
+CHANGELOG.md              变更记录与格式约定
 ```
 
 ## 命令
@@ -131,6 +149,9 @@ sources:                     # 块状对象列表
 缩进必须用**空格**（2 个），不能用 Tab。
 
 ## 新增一个节点
+
+> 这一节是速查。[CONTRIBUTING.md](CONTRIBUTING.md) 里有完整版：可复制的模板、
+> 依赖关系怎么定（什么算前置、什么算相关）、常见构建报错的处理方式。
 
 1. **挑一个领域**，在 `schema/domains.json` 里找它的 id（比如 `retrieval`）。
 2. **建文件**：`content/<领域目录>/<id>.md`。文件名必须和 `id` 完全一致。
@@ -246,19 +267,36 @@ cd web && npm install && npm run dev
 
 ## 测试
 
+三层，由浅到深。CI 每次都跑全部三层——**任何一层挂掉，发布都不会开始**。
+
 ```bash
+# 第一层：内容侧（零依赖）
 npm test
+
+# 第二层：前端逻辑
+cd web && npm test
+
+# 第三层：真实浏览器冒烟
+node web/tools/smoke.mjs --dist web/dist
 ```
 
-覆盖：frontmatter 解析（含各种坏写法）、Schema 校验通过/失败、悬空依赖、循环依赖、孤立节点、
-重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构、L2/L3 正文包。
+**内容侧**覆盖：frontmatter 解析（含各种坏写法）、Schema 校验通过/失败、悬空依赖、循环依赖、
+孤立节点、重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构、L2/L3 正文包。
 
-其中 `test/fixtures/broken/` 是一个**故意写坏的内容仓库**，覆盖了上表里的每一类错误；
+其中 `test/fixtures/broken/` 是一个**故意写坏的内容仓库**，覆盖了每一类错误；
 测试会断言错误信息「指明了文件、字段和原因，且不含堆栈或英文断言」。真实内容仓库本身也被当作
 一个测试用例跑一遍。
 
-前端另有 `cd web && npm test`，覆盖依赖子图（对全部 23 个节点与暴力实现逐一比对）、依赖顺序、
-布局的确定性与分层、以及 L2/L3 的 Markdown 解析。
+**前端**覆盖依赖子图（对全部节点与暴力实现逐一比对）、依赖顺序、布局的确定性与分层、
+以及 L2/L3 的 Markdown 解析。
+
+**浏览器冒烟**覆盖单元测试够不着的那一层：React 真的渲染出来了吗、SVG 交互、
+缩放与居中、聚焦模式的淡化、主题切换与持久化、localStorage、窄屏降级、控制台干不干净。
+它自己起静态服务器、自己拉一个无头浏览器，跑完自己收工——本地和 CI 跑的是同一条命令。
+需要本机装有 Chrome，且 Node ≥ 22.4。
+
+> 三层测试的**数量都与内容规模解耦**，不写死节点数：断言用的期望值从站点自己产出的
+> `graph.json` / `paths.json` / `content.json` 现算。内容增删不会让测试假报警。
 
 ## 设计约束
 
