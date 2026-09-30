@@ -22,7 +22,7 @@ import {
 } from './lib/load-content.js';
 import { buildGraph, checkPaths } from './lib/graph.js';
 import { BuildFailure, renderProblems, sortProblems } from './lib/problems.js';
-import { toGraphJson, toPathsJson } from './lib/serialize.js';
+import { toContentJson, toGraphJson, toPathsJson } from './lib/serialize.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = resolve(HERE, '..');
@@ -30,6 +30,7 @@ const DEFAULT_ROOT = resolve(HERE, '..');
 const OUTPUTS = {
   graph: 'web/public/graph.json',
   paths: 'web/public/paths.json',
+  content: 'web/public/content.json',
 };
 
 export function build({ rootDir = DEFAULT_ROOT, generatedAt = nowStamp() } = {}) {
@@ -66,15 +67,16 @@ export function build({ rootDir = DEFAULT_ROOT, generatedAt = nowStamp() } = {})
       generatedAt,
     }),
     paths: toPathsJson({ paths: loadedPaths.paths, byId, generatedAt }),
+    content: toContentJson({ nodes: graph.nodes, generatedAt }),
     warnings,
   };
 }
 
-export function writeOutputs(rootDir, { graph, paths }) {
-  for (const [artifact, relativePath] of Object.entries(OUTPUTS)) {
+export function writeOutputs(rootDir, artifacts) {
+  for (const [name, relativePath] of Object.entries(OUTPUTS)) {
     const target = join(rootDir, relativePath);
     mkdirSync(dirname(target), { recursive: true });
-    writeFileSync(target, `${JSON.stringify(artifact === 'graph' ? graph : paths, null, 2)}\n`);
+    writeFileSync(target, `${JSON.stringify(artifacts[name], null, 2)}\n`);
   }
 }
 
@@ -128,8 +130,9 @@ function main(argv) {
     if (checkOnly) {
       process.stdout.write('  --check：只校验，未写出文件\n');
     } else {
-      process.stdout.write(`  已写出 ${OUTPUTS.graph}\n`);
-      process.stdout.write(`  已写出 ${OUTPUTS.paths}\n`);
+      for (const relativePath of Object.values(OUTPUTS)) {
+        process.stdout.write(`  已写出 ${relativePath}\n`);
+      }
     }
   }
 

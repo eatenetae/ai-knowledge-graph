@@ -22,15 +22,17 @@ describe('干净输入：构建通过', () => {
     });
   });
 
-  it('写出的 graph.json / paths.json 能被解析，且结构符合约定', () => {
+  it('写出的 graph.json / paths.json / content.json 能被解析，且结构符合约定', () => {
     withFixtureRepo('minimal-ok', (rootDir) => {
       const result = build({ rootDir, generatedAt: '2026-01-01T00:00:00Z' });
       writeOutputs(rootDir, result);
 
       const graphPath = join(rootDir, 'web/public/graph.json');
       const pathsPath = join(rootDir, 'web/public/paths.json');
+      const contentPath = join(rootDir, 'web/public/content.json');
       assert.ok(existsSync(graphPath), '应当写出 graph.json');
       assert.ok(existsSync(pathsPath), '应当写出 paths.json');
+      assert.ok(existsSync(contentPath), '应当写出 content.json');
 
       const graph = JSON.parse(readFileSync(graphPath, 'utf8'));
       assert.equal(graph.version, 1);
@@ -47,11 +49,42 @@ describe('干净输入：构建通过', () => {
     });
   });
 
+  it('content.json 按节点 id 索引 L2/L3 正文，且覆盖全部节点', () => {
+    withFixtureRepo('minimal-ok', (rootDir) => {
+      const result = build({ rootDir, generatedAt: '2026-01-01T00:00:00Z' });
+
+      const ids = result.graph.nodes.map((node) => node.id).sort();
+      assert.deepEqual(Object.keys(result.content.nodes).sort(), ids);
+      assert.equal(result.content.node_count, ids.length);
+
+      for (const id of ids) {
+        const entry = result.content.nodes[id];
+        assert.equal(entry.id, id);
+        assert.ok(entry.l2.length > 0, `${id} 缺少 L2 正文`);
+        assert.ok(entry.l3.length > 0, `${id} 缺少 L3 正文`);
+      }
+    });
+  });
+
+  it('content.json 装的是正文原文，不含 frontmatter', () => {
+    withFixtureRepo('minimal-ok', (rootDir) => {
+      const result = build({ rootDir, generatedAt: '2026-01-01T00:00:00Z' });
+      const entry = result.content.nodes['base-node'];
+
+      assert.doesNotMatch(entry.l2, /^---/);
+      assert.doesNotMatch(entry.l2, /^id:\s/m);
+      // 小节标题本身不属于正文
+      assert.doesNotMatch(entry.l2, /^##\s/m);
+      assert.doesNotMatch(entry.l3, /^##\s/m);
+    });
+  });
+
   it('同样的内容产出同样的字节（构建结果稳定）', () => {
     withFixtureRepo('minimal-ok', (rootDir) => {
       const first = build({ rootDir, generatedAt: '2026-01-01T00:00:00Z' });
       const second = build({ rootDir, generatedAt: '2026-01-01T00:00:00Z' });
       assert.equal(JSON.stringify(first.graph), JSON.stringify(second.graph));
+      assert.equal(JSON.stringify(first.content), JSON.stringify(second.content));
     });
   });
 });
@@ -211,6 +244,17 @@ describe('真实内容仓库', () => {
     for (const edge of result.graph.edges) {
       assert.ok(ids.has(edge.source), `边的 source 不存在：${edge.source}`);
       assert.ok(ids.has(edge.target), `边的 target 不存在：${edge.target}`);
+    }
+  });
+
+  it('每个节点都有可渲染的 L2/L3 正文（三层卡片的数据来源）', () => {
+    const ids = result.graph.nodes.map((node) => node.id);
+    assert.equal(result.content.node_count, ids.length);
+    for (const id of ids) {
+      const entry = result.content.nodes[id];
+      assert.ok(entry, `content.json 缺少节点 ${id}`);
+      assert.ok(entry.l2.length >= 50, `${id} 的 L2 太短，可能没解析到`);
+      assert.ok(entry.l3.length >= 50, `${id} 的 L3 太短，可能没解析到`);
     }
   });
 
