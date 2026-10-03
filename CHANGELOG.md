@@ -53,7 +53,9 @@
 
 ## [未发布]
 
-（下一次发布的改动先写在这里。）
+### 内容
+
+- 新增节点 `prompt-caching`（deployment）：提示缓存。挂在 `prompt-engineering` 下（缓存的对象就是提示里不变的前缀），与 `inference-cost` 相关——首版之后第一个按 CONTRIBUTING 七步流程新增的节点
 
 ## [0.1.0] - 2026-09-30
 
