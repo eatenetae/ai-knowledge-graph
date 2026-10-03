@@ -379,6 +379,8 @@ content ──▶ web ──▶ smoke ──▶ deploy
 
 ### 首次启用发布
 
+> 本仓库已完成这一步（2026-10）：Pages 已启用（Source = GitHub Actions）、`PAGES_ENABLED` 已置 `true`，推送 `main` 即自动发布。以下步骤留作记录，换仓库或重置托管时照做。
+
 1. 确认仓库可以发布 Pages：**私有仓库需要 GitHub Pro/Team/Enterprise**，或者把仓库转成公开。免费账号下的私有仓库无法启用 Pages（API 会直接返回 `Your current plan does not support GitHub Pages for this repository`）。
 2. 仓库 **Settings → Pages**，把 **Source** 选成 **GitHub Actions**。
 3. 仓库 **Settings → Secrets and variables → Actions → Variables**，新建变量 `PAGES_ENABLED`，值填 `true`。

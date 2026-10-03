@@ -8,10 +8,6 @@ AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖�
 
 **https://eatenetae.github.io/ai-knowledge-graph/**
 
-> 首次发布需要一次性启用 GitHub Pages（私有仓库需要付费套餐或转公开）。启用步骤见
-> [CONTRIBUTING.md → 首次启用发布](CONTRIBUTING.md#首次启用发布)。**启用之前这个地址打不开**——
-> CI 已经配好，开关一开，推送到 `main` 就会自动构建并发布。
-
 **内容即数据。** 每个知识点就是 `content/` 下的一个 Markdown 文件，图谱、索引、学习路径全部由构建期自动生成。没有数据库，没有手工维护的大图。
 
 想往图谱里加东西？直接看 **[CONTRIBUTING.md](CONTRIBUTING.md)**——这份 README 讲这个项目是什么，那份讲你怎么改它。
