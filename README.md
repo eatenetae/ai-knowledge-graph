@@ -1,6 +1,6 @@
 # ai-knowledge-graph
 
-AI 知识图谱：内容驱动的 AI 知识网络，三层讲解 + 依赖路径 + 决策案例 + 面试题库。
+AI 知识图谱：面向 AI 产品经理的学习与面试准备站——内容驱动的知识网络，三层讲解 + 依赖路径 + 决策案例 + 面试题库。
 
 [![CI](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml)
 
@@ -8,7 +8,7 @@ AI 知识图谱：内容驱动的 AI 知识网络，三层讲解 + 依赖路径 
 
 **https://eatenetae.github.io/ai-knowledge-graph/**
 
-**v2 定位：面向 AI 产品经理。** 站点正在从「学 AI 的知识地图」再定位为 AI PM 的学习与面试准备工具——理清需要掌握哪些知识（六大能力域 + 节点 `pm` 标注 + 必修地图）、面试前必须学会什么（面试冲刺路径 + 题库）、用具体案例建立判断力（PM 决策型案例库）。其他受众的学习路径保留但从属。
+**v2 定位：面向 AI 产品经理。** 站点已从「学 AI 的知识地图」再定位为 AI PM 的学习与面试准备工具——理清需要掌握哪些知识（六大能力域 + 节点 `pm` 标注 + 必修地图）、面试前必须学会什么（面试冲刺路径 + 题库）、用具体案例建立判断力（PM 决策型案例库）。其他受众的学习路径保留但从属。
 
 **内容即数据。** 每个知识点就是 `content/` 下的一个 Markdown 文件，图谱、索引、学习路径、案例库、题库全部由构建期自动生成。没有数据库，没有手工维护的大图。
 
@@ -29,7 +29,7 @@ node build/index.js
 
   节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 8 条
   PM 标注：core 25 个（覆盖 6 个能力域） · useful 26 个
-  案例 10 个 · 面试题 31 道
+  案例 11 个 · 面试题 32 道
   已写出 web/public/graph.json
   已写出 web/public/paths.json
   已写出 web/public/content.json

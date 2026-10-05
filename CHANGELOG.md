@@ -51,9 +51,11 @@
 - 新增路径 `backend-engineer-to-rag`：给有后端经验的人一条不碰训练的 RAG 路线
 ```
 
-## [未发布]
+## [1.0.0] - 2026-10-05
 
 v2（面向 AI 产品经理，框架详见 `docs/pm-competency.md`）：地基（内容模型与 PM 标注）+ 内容（案例库、题库与 PM 路径）+ 前端（PM 优先的站点再定位）。
+
+升主版本的原因：按本文件的版本约定，`node.schema.json` 新增 `pm` 字段（frontmatter 字段的增）与 `graph.json` 新增字段 / 顶层 `pm_domains`（产物结构的改变）都记在主版本——尽管每一项都是向后兼容的增量，合计构成一次契约扩展。
 
 ### 新增
 
@@ -79,6 +81,8 @@ v2（面向 AI 产品经理，框架详见 `docs/pm-competency.md`）：地基�
 - 案例库从样例 2 个扩到 10 个，覆盖全部六大能力域与九类行业（MY-92）：新增 `fintech-model-selection-poc`（金融·模型选型 POC）、`education-tutor-eval-from-zero`（教育·评测从 0 到 1）、`saas-email-assistant-injection`（SaaS·提示注入风控）、`ecommerce-product-copy-review`（电商·文案灰度与人机协同）、`travel-planning-agent`（OTA·Agent 自动化边界）、`legal-contract-review-boundary`（法律·能力边界与人机分工）、`content-platform-data-flywheel`（内容平台·数据飞轮冷启动）、`hr-resume-screening-fairness`（HR·公平与合规）。数字全部标注「虚构但典型」，不冒充真实数据
 - 面试题库从样例 3 道扩到 31 道，八个分组全覆盖（MY-92）：能力边界 3 / 幻觉与质量 4 / RAG 与知识库 5 / Agent 4 / 成本与延迟 3 / 评测 4 / 数据与安全 3 / 项目与协作 5；「项目与协作」全部为 STAR 框架的行为题，答案要点给出四段式结构
 - 重写路径 `pm-ai-capability-boundaries` 为「AI PM 系统课」（MY-92，id 不变、URL 稳定）：从能力边界单域扩展为完整六域主线，20 步，正文新增「本课刻意跳过的卡」一节说明取舍
+- 新增案例 `insurance-claims-triage`（保险理赔，MY-93 按 CONTRIBUTING 从零走查的产出）：AI 做理赔「整理与初筛」、给付决定留给人的角色边界决策，行业库新增保险理赔一类
+- 新增面试题 `rag-quality-decay`（RAG 与知识库 · 常见，MY-93 走查产出）：上线后效果衰减怎么排查、怎么防，挂靠 `rag-failure-modes` / `observability` / `llm-evaluation`
 
 ### 变更
 
@@ -88,6 +92,7 @@ v2（面向 AI 产品经理，框架详见 `docs/pm-competency.md`）：地基�
 - `node.schema.json` 新增可选字段 `pm`（经父任务确认，v2 对节点契约的正式扩展）
 - README 补 v2 定位（AI PM 为第一受众）；CONTRIBUTING 补案例与面试题的贡献说明
 - `test/build.test.js` 的「真实内容仓库零提示」断言收窄（MY-92）：仅对两条 PM 路径豁免「前置依赖跳过」这一种提示——25 个 core 节点里只有 2 个的前置闭包全是 core，「只走 core / 20 步覆盖六域」与「零提示」结构上不可兼得；跳过是两条路径正文里文档化的设计决策。豁免之外的任何提示仍算回归，其余路径与全部节点维持零提示
+- README 定位语从「正在再定位」改为已交付的 v2 表述，简介开头改为 PM 优先；CONTRIBUTING 修正 v1 时代遗留的测试数量（前端 38→70、浏览器冒烟 43→92）与「本地跑起来」的样例输出计数（MY-93 走查时发现）
 
 ## [0.1.0] - 2026-09-30
 

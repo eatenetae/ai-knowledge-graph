@@ -52,9 +52,9 @@ npm run dev          # 打开终端里提示的地址
 ```
 ✓ 内容校验通过
 
-  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 7 条
+  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 8 条
   PM 标注：core 25 个（覆盖 6 个能力域） · useful 26 个
-  案例 2 个 · 面试题 3 道
+  案例 11 个 · 面试题 32 道
   已写出 web/public/graph.json
   已写出 web/public/paths.json
   已写出 web/public/content.json
@@ -369,10 +369,10 @@ npm test                     # 内容侧单元测试（79 项）
 
 # 第二层：前端单元测试与构建
 cd web
-npm test                     # 前端单元测试（38 项）
+npm test                     # 前端单元测试（70 项）
 npm run build                # tsc --noEmit + vite build，产出 dist/
 
-# 第三层：真实浏览器冒烟（43 项）
+# 第三层：真实浏览器冒烟（92 项）
 node tools/smoke.mjs --dist dist
 ```
 
