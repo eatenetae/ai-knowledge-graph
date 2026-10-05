@@ -1,0 +1,5 @@
+{
+  "$comment": "fixture 覆盖（原理见 test/fixtures/minimal-ok/schema/pm-domains.json）：broken fixture 专测节点/路径的坏写法，不测 PM 体系，给空登记表，保证问题清单与 PM 校验互不干扰。PM 体系的破坏性用例在 test/fixtures/pm-broken/。",
+  "core_count_bounds": [0, 0],
+  "domains": []
+}

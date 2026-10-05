@@ -2,6 +2,8 @@
 web/public/graph.json
 web/public/paths.json
 web/public/content.json
+web/public/cases.json
+web/public/interview.json
 
 # 前端构建产物（静态站点，由 web/ 下的源码构建而来）
 web/dist/

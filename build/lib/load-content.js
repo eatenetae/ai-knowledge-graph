@@ -1,6 +1,6 @@
 /**
  * 扫描 content/ 目录，把 Markdown 变成结构化数据。
- * 这一层只负责「读进来 + 按 schema 校验」，跨文件的图检查在 graph.js。
+ * 这一层只负责「读进来 + 按 schema 校验」，跨文件的图检查在 graph.js 与 pm.js。
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -11,6 +11,16 @@ import { validateAgainstSchema } from './schema-validator.js';
 import { problem } from './problems.js';
 
 export const REQUIRED_SECTIONS = ['直觉', '细节'];
+
+export const CASE_REQUIRED_SECTIONS = [
+  '场景背景',
+  '决策点',
+  '决策过程',
+  '结果与教训',
+  '面试怎么讲',
+];
+
+export const INTERVIEW_REQUIRED_SECTIONS = ['好答案的要点', '常见的错误答案', '追问'];
 
 export function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf8'));
@@ -39,6 +49,9 @@ export function listMarkdownFiles(rootDir, subDir) {
   return found;
 }
 
+/** 节点之外的其它内容类型各自占一个子目录，loadNodes 要跳过它们 */
+const NON_NODE_DIRS = ['content/paths/', 'content/cases/', 'content/interview/'];
+
 /**
  * 加载 content/ 下的全部节点。
  * @returns {{nodes: object[], problems: object[]}}
@@ -48,7 +61,7 @@ export function loadNodes(rootDir, nodeSchema) {
   const problems = [];
 
   for (const file of listMarkdownFiles(rootDir, 'content')) {
-    if (file.startsWith('content/paths/')) continue;
+    if (NON_NODE_DIRS.some((dir) => file.startsWith(dir))) continue;
 
     let parsed;
     try {
@@ -136,6 +149,79 @@ export function loadPaths(rootDir, pathSchema) {
   }
 
   return { paths, problems };
+}
+
+/**
+ * 案例与面试题共用的加载骨架：扫描子目录、解析 frontmatter、按 schema 校验、
+ * 检查必填小节。跨文件的引用检查在 pm.js。
+ */
+function loadCollection(rootDir, subDir, schema, requiredSections) {
+  const items = [];
+  const problems = [];
+
+  for (const file of listMarkdownFiles(rootDir, subDir)) {
+    let parsed;
+    try {
+      parsed = parseFrontmatter(readFileSync(join(rootDir, file), 'utf8'));
+    } catch (error) {
+      if (error instanceof FrontmatterError) {
+        problems.push(problem({ file, field: `第 ${error.line} 行`, message: error.message }));
+        continue;
+      }
+      throw error;
+    }
+
+    for (const issue of validateAgainstSchema(parsed.data, schema)) {
+      problems.push(
+        problem({ file, field: issue.path, message: issue.message, hint: issue.hint }),
+      );
+    }
+
+    const sections = parseSections(parsed.body);
+    for (const name of requiredSections) {
+      if (!sections[name]) {
+        problems.push(
+          problem({
+            file,
+            field: `## ${name}`,
+            message: `正文缺少 \`## ${name}\` 小节，或该小节是空的`,
+          }),
+        );
+      }
+    }
+
+    items.push({
+      file,
+      id: typeof parsed.data.id === 'string' ? parsed.data.id : null,
+      data: parsed.data,
+      sections,
+    });
+  }
+
+  return { items, problems };
+}
+
+/**
+ * 加载 content/cases/ 下的全部案例。
+ * @returns {{cases: object[], problems: object[]}}
+ */
+export function loadCases(rootDir, caseSchema) {
+  const { items, problems } = loadCollection(rootDir, 'content/cases', caseSchema, CASE_REQUIRED_SECTIONS);
+  return { cases: items, problems };
+}
+
+/**
+ * 加载 content/interview/ 下的全部面试题。
+ * @returns {{questions: object[], problems: object[]}}
+ */
+export function loadInterview(rootDir, questionSchema) {
+  const { items, problems } = loadCollection(
+    rootDir,
+    'content/interview',
+    questionSchema,
+    INTERVIEW_REQUIRED_SECTIONS,
+  );
+  return { questions: items, problems };
 }
 
 /**

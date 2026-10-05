@@ -14,6 +14,8 @@ export interface GraphNode {
   id: string;
   title: string;
   domain: string;
+  /** v2：PM 相关性标注（core = AI PM 面试前必须掌握 / useful = 相关但非必须 / null = 无标记） */
+  pm: 'core' | 'useful' | null;
   /** L1：一句话，零术语 */
   summary: string;
   tags: string[];
@@ -23,6 +25,15 @@ export interface GraphNode {
   sources: SourceLink[];
   updated_at: string;
   file: string;
+}
+
+/** v2：PM 六大能力域，必修地图的分组依据（schema/pm-domains.json） */
+export interface PmDomainMeta {
+  id: string;
+  label: string;
+  order: number;
+  summary: string;
+  core_nodes: string[];
 }
 
 /**
@@ -48,6 +59,8 @@ export interface GraphStats {
   prerequisite_edge_count: number;
   related_edge_count: number;
   domain_count: number;
+  pm_core_count: number;
+  pm_useful_count: number;
 }
 
 export interface GraphJson {
@@ -55,6 +68,7 @@ export interface GraphJson {
   generated_at: string;
   edge_semantics: string;
   domains: DomainMeta[];
+  pm_domains: PmDomainMeta[];
   nodes: GraphNode[];
   edges: GraphEdge[];
   stats: GraphStats;
