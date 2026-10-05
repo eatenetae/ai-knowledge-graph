@@ -2,6 +2,7 @@
 id: context-engineering
 title: 上下文工程
 domain: deployment
+pm: core
 summary: 精心安排模型这一次能看到的所有内容，而不只是打磨你写的那句话。
 prerequisites:
   - context-window

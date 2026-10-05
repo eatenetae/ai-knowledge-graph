@@ -2,6 +2,7 @@
 id: catastrophic-forgetting
 title: 灾难性遗忘
 domain: finetuning
+pm: useful
 summary: 模型学了新东西之后，可能把原来会的东西忘掉，甚至忘得很彻底。
 prerequisites:
   - fine-tuning

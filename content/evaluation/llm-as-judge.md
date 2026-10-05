@@ -2,6 +2,7 @@
 id: llm-as-judge
 title: 用模型当裁判
 domain: evaluation
+pm: core
 summary: 让一个模型去给另一个模型的回答打分，把主观质量变成可批量计算的分数。
 prerequisites:
   - llm-evaluation

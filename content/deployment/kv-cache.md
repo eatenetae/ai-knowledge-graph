@@ -2,6 +2,7 @@
 id: kv-cache
 title: KV Cache
 domain: deployment
+pm: useful
 summary: 把前面算过的中间结果存下来，写每个新字时就不用从头重算一遍。
 prerequisites:
   - autoregressive-generation

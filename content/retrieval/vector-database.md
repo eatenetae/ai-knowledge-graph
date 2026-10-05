@@ -2,6 +2,7 @@
 id: vector-database
 title: 向量数据库
 domain: retrieval
+pm: useful
 summary: 专门用来在几百万条「意思」里，飞快找出跟你的问题最接近的那几条。
 prerequisites:
   - embedding

@@ -2,6 +2,7 @@
 id: fine-tuning
 title: 微调
 domain: finetuning
+pm: core
 summary: 拿你自己的数据再训练一下模型，让它学会特定的风格、格式或领域说法。
 prerequisites:
   - llm-pretraining

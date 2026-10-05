@@ -2,6 +2,7 @@
 id: next-token-prediction
 title: 下一词预测
 domain: llm-training
+pm: core
 summary: 大模型唯一被训练去做的事，就是猜下一个字最可能是什么。
 prerequisites:
   - transformer

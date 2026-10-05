@@ -2,6 +2,7 @@
 id: few-shot-prompting
 title: 少样本提示
 domain: prompting
+pm: useful
 summary: 在问题前面给几个「输入→输出」的例子，模型就能照葫芦画瓢。
 prerequisites:
   - prompt-engineering

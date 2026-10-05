@@ -2,6 +2,7 @@
 id: embedding
 title: 词向量
 domain: neural-networks
+pm: core
 summary: 把每个词变成一串数字，意思相近的词，数字也挨得近。
 prerequisites:
   - neural-network

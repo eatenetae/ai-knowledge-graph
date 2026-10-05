@@ -2,6 +2,7 @@
 id: prompt-engineering
 title: 提示工程
 domain: prompting
+pm: core
 summary: 通过组织你输入的文字，让模型给出你想要的结果，而不改动模型本身。
 prerequisites:
   - llm-pretraining

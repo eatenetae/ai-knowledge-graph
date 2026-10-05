@@ -2,6 +2,7 @@
 id: scaling-law
 title: 规模定律
 domain: llm-training
+pm: useful
 summary: 模型变大的收益是可以预测的，这让「烧钱堆规模」变成了一门可计算的生意。
 prerequisites:
   - llm-pretraining

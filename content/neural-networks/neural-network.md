@@ -2,6 +2,7 @@
 id: neural-network
 title: 神经网络
 domain: neural-networks
+pm: useful
 summary: 把许多个极简单的判断单元叠在一起，就能拟合出非常复杂的规律。
 prerequisites:
   - what-is-machine-learning

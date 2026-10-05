@@ -2,6 +2,7 @@
 id: lora
 title: LoRA
 domain: finetuning
+pm: useful
 summary: 不改动原来的模型，只在旁边加一小块新数字来训练，效果接近把整个模型重训一遍。
 prerequisites:
   - fine-tuning

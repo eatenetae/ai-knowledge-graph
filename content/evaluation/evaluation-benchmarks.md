@@ -2,6 +2,7 @@
 id: evaluation-benchmarks
 title: 评测基准
 domain: evaluation
+pm: useful
 summary: 一套统一的考题，用来给不同模型打分、排出高低。
 prerequisites:
   - llm-evaluation

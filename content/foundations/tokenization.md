@@ -2,6 +2,7 @@
 id: tokenization
 title: 分词
 domain: foundations
+pm: core
 summary: 把一句话切成模型能处理的小块，是文字进入模型前的第一道工序。
 prerequisites: []
 related: []

@@ -2,6 +2,7 @@
 id: full-finetuning-vs-peft
 title: 全量微调与参数高效微调
 domain: finetuning
+pm: useful
 summary: 一种是改动模型里全部数字，另一种只加一小撮新数字，后者便宜得多。
 prerequisites:
   - fine-tuning

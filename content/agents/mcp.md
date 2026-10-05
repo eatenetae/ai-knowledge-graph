@@ -2,6 +2,7 @@
 id: mcp
 title: MCP（模型上下文协议）
 domain: agents
+pm: useful
 summary: 一套统一插头标准，让工具一次写好就能被所有 AI 应用直接使用。
 prerequisites:
   - tool-use

@@ -2,6 +2,7 @@
 id: jailbreak
 title: 越狱
 domain: safety
+pm: useful
 summary: 用户用各种话术绕开模型的安全限制，让它说出本该拒绝的内容。
 prerequisites:
   - prompt-injection

@@ -2,6 +2,7 @@
 id: sampling-strategies
 title: 采样策略
 domain: deployment
+pm: useful
 summary: 模型给出的是每个候选字的概率，怎么从中挑一个，决定了回答的风格。
 prerequisites:
   - autoregressive-generation

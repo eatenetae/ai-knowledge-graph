@@ -2,6 +2,7 @@
 id: prompt-caching
 title: 提示缓存
 domain: deployment
+pm: useful
 summary: 把每次都要重复发的那段话存在服务商那边，下次直接跳过，省钱也省时间。
 prerequisites:
   - prompt-engineering

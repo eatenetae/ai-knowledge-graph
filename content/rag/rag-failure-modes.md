@@ -2,6 +2,7 @@
 id: rag-failure-modes
 title: RAG 的失败模式
 domain: rag
+pm: core
 summary: 查资料答题出错时，先分清是「没找到」还是「找到了没用对」，这两件事的修法完全不同。
 prerequisites:
   - rag

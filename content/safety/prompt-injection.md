@@ -2,6 +2,7 @@
 id: prompt-injection
 title: 提示注入
 domain: safety
+pm: core
 summary: 有人在你的资料里藏了一句话，模型读到后把它当成了你的指令。
 prerequisites:
   - prompt-engineering

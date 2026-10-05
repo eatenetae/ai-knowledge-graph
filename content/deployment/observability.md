@@ -2,6 +2,7 @@
 id: observability
 title: 可观测性
 domain: deployment
+pm: core
 summary: 把每次调用的输入、输出、耗时和花费都记下来，出问题时才查得动。
 prerequisites:
   - llm-evaluation

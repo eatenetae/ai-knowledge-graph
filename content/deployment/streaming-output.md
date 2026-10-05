@@ -2,6 +2,7 @@
 id: streaming-output
 title: 流式输出
 domain: deployment
+pm: useful
 summary: 模型每写一个字就立刻发给用户，而不是等整段写完再一次性显示。
 prerequisites:
   - autoregressive-generation

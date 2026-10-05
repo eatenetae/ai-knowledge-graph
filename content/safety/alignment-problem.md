@@ -2,6 +2,7 @@
 id: alignment-problem
 title: 对齐问题
 domain: safety
+pm: useful
 summary: 让模型真正去做我们想要的事，比让它看起来很听话要难得多。
 prerequisites:
   - rlhf

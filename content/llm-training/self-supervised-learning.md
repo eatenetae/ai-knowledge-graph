@@ -2,6 +2,7 @@
 id: self-supervised-learning
 title: 自监督学习
 domain: llm-training
+pm: useful
 summary: 答案不用人标，就藏在文本自己身上，这让训练数据从百万级涨到万亿级。
 prerequisites:
   - next-token-prediction

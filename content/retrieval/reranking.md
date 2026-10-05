@@ -2,6 +2,7 @@
 id: reranking
 title: 重排序
 domain: retrieval
+pm: useful
 summary: 先快速粗筛出一批候选，再用更准但更慢的方法重新排个序。
 prerequisites:
   - semantic-search
