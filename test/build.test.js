@@ -208,7 +208,21 @@ describe('真实内容仓库', () => {
 
   it('23 个样例节点全部通过校验，构建无问题', () => {
     assert.ok(result.graph.stats.node_count >= 10, '至少需要 10 个样例节点');
-    assert.deepEqual(result.warnings, [], '示例内容不应该产生任何提示');
+    // 「零提示」对两条 PM 路径豁免「前置依赖跳过」这一类提示（MY-92）：
+    // 冲刺线被要求只走 core 节点、系统课被要求 20 步内覆盖完整六域，而 25 个
+    // core 节点里只有 2 个的前置闭包全是 core——「只走 core」与「零提示」
+    // 结构上不可兼得。跳过是这两条路径文档化的设计决策（正文里有「刻意
+    // 跳过的卡」一节），豁免只认这两条路径、只认这一种提示；其余内容
+    // 仍然必须零提示，别处的任何提示都算回归。
+    const tolerated = (warning) =>
+      (warning.file === 'content/paths/pm-interview-sprint.md' ||
+        warning.file === 'content/paths/pm-ai-capability-boundaries.md') &&
+      /前置依赖 .* 没有出现在它前面/.test(warning.message);
+    assert.deepEqual(
+      result.warnings.filter((warning) => !tolerated(warning)),
+      [],
+      '示例内容不应该产生任何提示',
+    );
   });
 
   it('12 个领域全部有节点，且 domains 登记与 schema 一致', () => {

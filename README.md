@@ -27,9 +27,9 @@ node build/index.js
 ```
 ✓ 内容校验通过
 
-  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 7 条
+  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 8 条
   PM 标注：core 25 个（覆盖 6 个能力域） · useful 26 个
-  案例 2 个 · 面试题 3 道
+  案例 10 个 · 面试题 31 道
   已写出 web/public/graph.json
   已写出 web/public/paths.json
   已写出 web/public/content.json
