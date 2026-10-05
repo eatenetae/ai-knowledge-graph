@@ -2,6 +2,7 @@
 id: attention
 title: 注意力机制
 domain: transformer
+pm: useful
 summary: 处理每个词时，先看一眼句子里其他词，决定该重点参考谁。
 prerequisites:
   - embedding

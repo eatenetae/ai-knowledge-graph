@@ -4,11 +4,11 @@
 
 ## 跑起来
 
-前端消费的三个 JSON 是**构建产物、不入库**，所以第一次要先跑一次内容构建：
+前端消费的五个 JSON 是**构建产物、不入库**，所以第一次要先跑一次内容构建：
 
 ```bash
 cd ..
-node build/index.js     # 产出 web/public/{graph.json,paths.json,content.json}
+node build/index.js     # 产出 web/public/{graph,paths,content,cases,interview}.json
 
 cd web
 npm install
@@ -24,7 +24,7 @@ npm test                # 前端逻辑的单元测试
 
 ```
 web/
-  public/            构建产物落点（graph.json / paths.json / content.json），Vite 会原样拷进 dist/
+  public/            构建产物落点（五个 JSON，Vite 会原样拷进 dist/）；favicon.ico / og-image.png 是入库的静态资产
   src/
     types.ts         构建产物的类型（前端只消费，不生成）
     App.tsx          页面骨架、状态、hash 路由
@@ -50,11 +50,11 @@ web/
 
 ## 数据契约
 
-三个产物都由 `node build/index.js` 写出，结构见仓库根 README 与 `build/lib/serialize.js`。
+五个产物都由 `node build/index.js` 写出，结构见仓库根 README 与 `build/lib/serialize.js`。
 
 ### graph.json
 
-只含**元数据**（id / title / domain / summary / tags / prerequisites / related / sources / updated_at），
+只含**元数据**（id / title / domain / pm / summary / tags / prerequisites / related / sources / updated_at），
 L1 在 `summary` 里，不含 L2/L3 正文。
 
 ```jsonc
@@ -63,11 +63,16 @@ L1 在 `summary` 里，不含 L2/L3 正文。
   "generated_at": "2026-09-29T13:40:11Z",
   "edge_semantics": "source -> target 表示「先学 source，才能学 target」",
   "domains": [{ "id": "foundations", "label": "基础概念", "order": 1, "node_count": 2 }],
+  "pm_domains": [
+    // v2：PM 六大能力域，必修地图的分组依据（schema/pm-domains.json）
+    { "id": "capability-boundaries", "label": "能力边界判断", "order": 1, "summary": "……", "core_nodes": ["hallucination"] }
+  ],
   "nodes": [
     {
       "id": "transformer",
       "title": "Transformer",
       "domain": "transformer",
+      "pm": "useful",          // v2：core / useful / null（无标记）
       "summary": "一种把「注意力」当主料的网络结构……",   // L1
       "tags": ["核心架构"],
       "prerequisites": ["attention"],
@@ -81,7 +86,7 @@ L1 在 `summary` 里，不含 L2/L3 正文。
     { "source": "attention", "target": "transformer", "type": "prerequisite" },
     { "source": "a", "target": "b", "type": "related" }
   ],
-  "stats": { "node_count": 23, "edge_count": 35, "domain_count": 12 }
+  "stats": { "node_count": 55, "edge_count": 165, "domain_count": 12, "pm_core_count": 25, "pm_useful_count": 26 }
 }
 ```
 
@@ -134,6 +139,64 @@ L1 在 `summary` 里，不含 L2/L3 正文。
 这样卡片里的排版调整不需要重新构建内容。渲染器只覆盖内容实际用到的语法
 （段落、粗体/斜体、行内代码、链接、围栏代码块、嵌套列表、表格），
 并且**不渲染原始 HTML**。
+
+### cases.json（v2）
+
+PM 决策案例。正文五节映射为英文键，正文同样是 Markdown 原文：
+
+```jsonc
+{
+  "version": 1,
+  "generated_at": "...",
+  "case_count": 2,
+  "cases": [
+    {
+      "id": "ecommerce-cs-refund-policy",
+      "title": "电商客服机器人：退款政策问答敢不敢交给大模型",
+      "industry": "电商客服",
+      "domains": ["capability-boundaries", "solution-intuition", "evaluation-quality"],
+      "nodes": ["rag", "hallucination", "rag-failure-modes", "llm-evaluation", "context-window"],
+      "tags": ["RAG", "客服", "上线决策"],
+      "sources": [],
+      "updated_at": "2026-10-05",
+      "sections": {
+        "background": "（`## 场景背景` 的 Markdown 原文）",
+        "decision_points": "（`## 决策点`）",
+        "process": "（`## 决策过程`）",
+        "outcome": "（`## 结果与教训`）",
+        "interview_pitch": "（`## 面试怎么讲`）"
+      },
+      "file": "content/cases/ecommerce-cs-refund-policy.md"
+    }
+  ]
+}
+```
+
+`nodes` 只存 id，节点标题/领域从 `graph.json` join（前端本来就拿着它）。
+
+### interview.json（v2）
+
+AI PM 面试题，正文三节映射为 `good_answer / wrong_answers / follow_ups`：
+
+```jsonc
+{
+  "version": 1,
+  "generated_at": "...",
+  "question_count": 3,
+  "questions": [
+    {
+      "id": "why-llm-hallucinates",
+      "question": "大模型为什么会「一本正经地胡说八道」？……",
+      "category": "幻觉与质量",     // 八类分组之一
+      "frequency": "高频",          // 高频 / 常见 / 偶见
+      "nodes": ["hallucination", "next-token-prediction", "rag", "llm-evaluation"],
+      "updated_at": "2026-10-05",
+      "sections": { "good_answer": "…", "wrong_answers": "…", "follow_ups": "…" },
+      "file": "content/interview/why-llm-hallucinates.md"
+    }
+  ]
+}
+```
 
 ## 几个实现上的取舍
 

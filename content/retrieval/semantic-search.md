@@ -2,6 +2,7 @@
 id: semantic-search
 title: 语义检索
 domain: retrieval
+pm: core
 summary: 按「意思」而不是按「字面」找东西，你问「怎么退货」，它能找到「售后流程说明」。
 prerequisites:
   - embedding

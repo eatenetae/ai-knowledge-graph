@@ -2,6 +2,7 @@
 id: model-quantization
 title: 模型量化
 domain: deployment
+pm: useful
 summary: 用更少的位数存模型的数字，让它跑得更快、更省内存，效果只掉一点点。
 prerequisites:
   - llm-pretraining

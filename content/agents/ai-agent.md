@@ -2,6 +2,7 @@
 id: ai-agent
 title: 智能体
 domain: agents
+pm: core
 summary: 让模型自己决定下一步做什么，做完看结果，再决定下一步，直到任务完成。
 prerequisites:
   - prompt-engineering

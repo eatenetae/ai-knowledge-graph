@@ -2,6 +2,7 @@
 id: training-vs-inference
 title: 训练与推理
 domain: foundations
+pm: core
 summary: 一个模型一辈子只学一次，之后每次回答都只是把学到的拿出来用。
 prerequisites:
   - neural-network

@@ -1,0 +1,5 @@
+{
+  "$comment": "fixture 覆盖：helpers.js 会把真实的 schema/ 拷进测试仓库，再叠上 fixture 本身——所以这里可以用一个迷你登记表替掉真实那份。真实的 schema/pm-domains.json 与节点集耦合（core_nodes 引用具体节点 id），不像 node.schema.json 那样是纯契约，fixture 必须自带一份与本 fixture 节点集匹配的。这个 fixture 不测 PM 体系，给空登记表即可（PM 相关的 happy path 在 test/fixtures/pm-ok/）。",
+  "core_count_bounds": [0, 0],
+  "domains": []
+}

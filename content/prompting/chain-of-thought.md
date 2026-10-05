@@ -2,6 +2,7 @@
 id: chain-of-thought
 title: 思维链
 domain: prompting
+pm: useful
 summary: 让模型先把推理过程一步步写出来，再给答案，正确率会明显提高。
 prerequisites:
   - prompt-engineering

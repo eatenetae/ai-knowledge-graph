@@ -2,6 +2,7 @@
 id: chunking
 title: 文本切分
 domain: retrieval
+pm: useful
 summary: 把长文档剪成一小块一小块，检索时才能精准地只取出相关的那一段。
 prerequisites:
   - tokenization

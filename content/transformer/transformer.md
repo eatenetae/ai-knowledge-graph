@@ -2,6 +2,7 @@
 id: transformer
 title: Transformer
 domain: transformer
+pm: useful
 summary: 一种让每个字都能直接看到句子里所有其他字的结构，今天几乎所有大模型都用它。
 prerequisites:
   - attention

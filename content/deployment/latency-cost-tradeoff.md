@@ -2,6 +2,7 @@
 id: latency-cost-tradeoff
 title: 延迟与成本的权衡
 domain: deployment
+pm: core
 summary: 更快、更便宜、更准这三件事很难同时要，必须按场景选两个。
 prerequisites:
   - inference-cost

@@ -2,6 +2,7 @@
 id: hallucination
 title: 幻觉
 domain: evaluation
+pm: core
 summary: 模型会一本正经地说出完全不存在的事实，而且语气和说真话时一模一样。
 prerequisites:
   - llm-pretraining

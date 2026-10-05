@@ -2,6 +2,7 @@
 id: rlhf
 title: 基于人类反馈的强化学习
 domain: safety
+pm: useful
 summary: 让人类给模型的多个回答排个优劣，模型照着这个偏好越学越对味。
 prerequisites:
   - fine-tuning

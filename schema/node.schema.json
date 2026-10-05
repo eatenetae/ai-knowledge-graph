@@ -51,6 +51,12 @@
       "x-error": "必须是 schema/domains.json 中登记的领域 id",
       "description": "所属领域，决定节点在图谱中的分组与配色。"
     },
+    "pm": {
+      "type": "string",
+      "enum": ["core", "useful"],
+      "x-error": "pm 标注只能是 core（AI PM 面试前必须掌握）或 useful（PM 相关但非必须）；无 PM 标记就不要写这一行",
+      "description": "可选。v2 起的 PM 相关性标注：core = AI 产品经理面试前必须掌握；useful = 相关但非必须；缺省 = 无 PM 标记（偏工程深度的内容）。标了 core 的节点还必须登记进 schema/pm-domains.json 对应能力域的 core_nodes（构建期双向校验）。"
+    },
     "summary": {
       "type": "string",
       "minLength": 10,

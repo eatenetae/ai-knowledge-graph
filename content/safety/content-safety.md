@@ -2,6 +2,7 @@
 id: content-safety
 title: 内容安全
 domain: safety
+pm: core
 summary: 在输入和输出两头设卡，把不该出现的内容挡住，同时别误伤正常用户。
 prerequisites:
   - alignment-problem

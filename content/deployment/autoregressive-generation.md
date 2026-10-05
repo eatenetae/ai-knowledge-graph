@@ -2,6 +2,7 @@
 id: autoregressive-generation
 title: 自回归生成
 domain: deployment
+pm: core
 summary: 模型一个字一个字往外蹦，每写一个字都要把前面所有字重看一遍。
 prerequisites:
   - next-token-prediction

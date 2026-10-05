@@ -2,6 +2,7 @@
 id: vector-similarity
 title: 向量空间与相似度
 domain: neural-networks
+pm: useful
 summary: 把每样东西变成一串数字后，靠量两串数字的距离来判断它们像不像。
 prerequisites:
   - embedding

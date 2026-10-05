@@ -2,6 +2,7 @@
 id: structured-output
 title: 结构化输出
 domain: prompting
+pm: core
 summary: 让模型按固定格式（比如一张表格）回答，程序才接得住它的结果。
 prerequisites:
   - prompt-engineering

@@ -2,6 +2,7 @@
 id: what-is-machine-learning
 title: 什么是机器学习
 domain: foundations
+pm: core
 summary: 不把规则一条条写死，而是让计算机自己从大量例子里总结出规律。
 prerequisites: []
 related: []

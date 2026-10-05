@@ -2,6 +2,7 @@
 id: rag
 title: RAG（检索增强生成）
 domain: rag
+pm: core
 summary: 回答前先去你的资料里查一遍，把查到的内容连同问题一起交给模型。
 prerequisites:
   - semantic-search

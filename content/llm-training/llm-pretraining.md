@@ -2,6 +2,7 @@
 id: llm-pretraining
 title: 预训练
 domain: llm-training
+pm: core
 summary: 用海量文本把一个大网络从随机状态练成「什么都懂一点」的通用模型。
 prerequisites:
   - next-token-prediction

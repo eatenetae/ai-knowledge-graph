@@ -2,6 +2,7 @@
 id: context-window
 title: 上下文窗口
 domain: transformer
+pm: core
 summary: 模型一次能「同时看见」的文字总量，超出部分它就真的看不到了。
 prerequisites:
   - transformer

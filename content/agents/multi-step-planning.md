@@ -2,6 +2,7 @@
 id: multi-step-planning
 title: 多步规划
 domain: agents
+pm: useful
 summary: 让模型把大任务拆成一串小步骤，走一步看一步，而不是一口气答完。
 prerequisites:
   - ai-agent

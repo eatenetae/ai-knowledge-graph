@@ -2,6 +2,7 @@
 id: llm-evaluation
 title: 大模型评估
 domain: evaluation
+pm: core
 summary: 怎么知道模型答得好不好——把「感觉还行」变成能对比、能回归的数字。
 prerequisites:
   - llm-pretraining

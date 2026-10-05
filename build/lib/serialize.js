@@ -5,8 +5,25 @@
 
 export const GRAPH_VERSION = 1;
 export const CONTENT_VERSION = 1;
+export const CASES_VERSION = 1;
+export const INTERVIEW_VERSION = 1;
 
-export function toGraphJson({ nodes, edges, domains, generatedAt }) {
+// 正文小节用中文标题（作者写的是中文），产物的键用英文——与 content.json 的 l2/l3 同思路
+export const CASE_SECTION_KEYS = {
+  场景背景: 'background',
+  决策点: 'decision_points',
+  决策过程: 'process',
+  结果与教训: 'outcome',
+  面试怎么讲: 'interview_pitch',
+};
+
+export const INTERVIEW_SECTION_KEYS = {
+  好答案的要点: 'good_answer',
+  常见的错误答案: 'wrong_answers',
+  追问: 'follow_ups',
+};
+
+export function toGraphJson({ nodes, edges, domains, pmDomains, generatedAt }) {
   const domainMeta = new Map(domains.map((domain) => [domain.id, domain]));
   const orderOf = (id) => domainMeta.get(id)?.order ?? 999;
 
@@ -31,10 +48,20 @@ export function toGraphJson({ nodes, edges, domains, generatedAt }) {
       order: domain.order,
       node_count: counts.get(domain.id) ?? 0,
     })),
+    // v2：PM 六大能力域（必修地图的分组依据），core_nodes 与节点的 pm: core 双向一致
+    pm_domains: (pmDomains ?? []).map((domain) => ({
+      id: domain.id,
+      label: domain.label,
+      order: domain.order,
+      summary: domain.summary ?? '',
+      core_nodes: domain.core_nodes ?? [],
+    })),
     nodes: sortedNodes.map((node) => ({
       id: node.id,
       title: node.data.title,
       domain: node.data.domain,
+      // v2：PM 相关性标注，core / useful / null（无标记）
+      pm: node.data.pm ?? null,
       summary: node.data.summary,
       tags: node.data.tags ?? [],
       prerequisites: node.data.prerequisites ?? [],
@@ -50,6 +77,8 @@ export function toGraphJson({ nodes, edges, domains, generatedAt }) {
       prerequisite_edge_count: edges.filter((edge) => edge.type === 'prerequisite').length,
       related_edge_count: edges.filter((edge) => edge.type === 'related').length,
       domain_count: new Set(sortedNodes.map((node) => node.data.domain)).size,
+      pm_core_count: sortedNodes.filter((node) => node.data.pm === 'core').length,
+      pm_useful_count: sortedNodes.filter((node) => node.data.pm === 'useful').length,
     },
   };
 }
@@ -107,4 +136,59 @@ export function toPathsJson({ paths, byId, generatedAt }) {
       file: path.file,
     })),
   };
+}
+
+/**
+ * PM 决策案例包（v2）。正文五节按 CASE_SECTION_KEYS 映射成英文键，
+ * 前端渲染 Markdown，构建期不做转换——与 content.json 的取舍一致。
+ */
+export function toCasesJson({ cases, generatedAt }) {
+  const sorted = [...cases].sort((a, b) => a.id.localeCompare(b.id));
+
+  return {
+    version: CASES_VERSION,
+    generated_at: generatedAt,
+    case_count: sorted.length,
+    cases: sorted.map((item) => ({
+      id: item.id,
+      title: item.data.title,
+      industry: item.data.industry,
+      domains: item.data.domains ?? [],
+      nodes: item.data.nodes ?? [],
+      tags: item.data.tags ?? [],
+      sources: item.data.sources ?? [],
+      updated_at: item.data.updated_at,
+      sections: mapSections(item.sections, CASE_SECTION_KEYS),
+      file: item.file,
+    })),
+  };
+}
+
+/** 面试题包（v2）。question 在 frontmatter，正文三节按 INTERVIEW_SECTION_KEYS 映射。 */
+export function toInterviewJson({ questions, generatedAt }) {
+  const sorted = [...questions].sort((a, b) => a.id.localeCompare(b.id));
+
+  return {
+    version: INTERVIEW_VERSION,
+    generated_at: generatedAt,
+    question_count: sorted.length,
+    questions: sorted.map((item) => ({
+      id: item.id,
+      question: item.data.question,
+      category: item.data.category,
+      frequency: item.data.frequency,
+      nodes: item.data.nodes ?? [],
+      updated_at: item.data.updated_at,
+      sections: mapSections(item.sections, INTERVIEW_SECTION_KEYS),
+      file: item.file,
+    })),
+  };
+}
+
+function mapSections(sections, keyMap) {
+  const out = {};
+  for (const [chinese, english] of Object.entries(keyMap)) {
+    out[english] = sections[chinese] ?? '';
+  }
+  return out;
 }

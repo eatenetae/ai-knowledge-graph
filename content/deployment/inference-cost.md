@@ -2,6 +2,7 @@
 id: inference-cost
 title: 推理成本
 domain: deployment
+pm: core
 summary: 每次调用模型都要花钱，钱主要花在「读进去多少字」和「写出来多少字」上。
 prerequisites:
   - autoregressive-generation

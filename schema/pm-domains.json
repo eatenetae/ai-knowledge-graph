@@ -1,0 +1,79 @@
+{
+  "$comment": "AI PM 六大能力域登记表（v2）。框架的完整定义见 docs/pm-competency.md。id 供案例 frontmatter 的 domains 引用（构建期校验存在性）；core_nodes 是该域的必修节点，必须与节点 frontmatter 的 pm: core 标注双向一致（构建期校验，两边漂移都会失败）；core_count_bounds 是全图 core 节点总数的验收区间——core 是「AI PM 面试前必须掌握」，宁缺毋滥，内容规模显著变化时再 consciously 调整这里。",
+  "core_count_bounds": [25, 35],
+  "domains": [
+    {
+      "id": "capability-boundaries",
+      "label": "能力边界判断",
+      "order": 1,
+      "summary": "AI 能做什么、不能做什么：模型怎么获得知识和能力、为什么会一本正经地胡说八道、不确定性从哪来。这是 PM 一切判断的地基。",
+      "core_nodes": [
+        "what-is-machine-learning",
+        "training-vs-inference",
+        "llm-pretraining",
+        "next-token-prediction",
+        "hallucination",
+        "context-window"
+      ]
+    },
+    {
+      "id": "solution-intuition",
+      "label": "技术方案理解",
+      "order": 2,
+      "summary": "RAG、微调、提示工程、Agent 各自解决什么问题、代价是什么，面对一个需求时往哪条路上选。",
+      "core_nodes": [
+        "prompt-engineering",
+        "embedding",
+        "semantic-search",
+        "rag",
+        "fine-tuning",
+        "ai-agent",
+        "tool-use"
+      ]
+    },
+    {
+      "id": "cost-performance",
+      "label": "成本与性能",
+      "order": 3,
+      "summary": "token 怎么计费、延迟由什么决定、上下文长度和输出长度如何同时影响体验和毛利。",
+      "core_nodes": [
+        "tokenization",
+        "autoregressive-generation",
+        "inference-cost",
+        "latency-cost-tradeoff"
+      ]
+    },
+    {
+      "id": "evaluation-quality",
+      "label": "评测与质量",
+      "order": 4,
+      "summary": "怎么定义「好」、评测集怎么建、上线后怎么回归，以及 RAG 出问题时怎么拆开定位。",
+      "core_nodes": [
+        "llm-evaluation",
+        "llm-as-judge",
+        "rag-failure-modes"
+      ]
+    },
+    {
+      "id": "data-compliance",
+      "label": "数据与合规",
+      "order": 5,
+      "summary": "数据从哪来、隐私和版权的红线、内容安全怎么过、提示注入为什么是产品级风险。",
+      "core_nodes": [
+        "prompt-injection",
+        "content-safety"
+      ]
+    },
+    {
+      "id": "delivery",
+      "label": "落地方法",
+      "order": 6,
+      "summary": "从 POC 到上线：上下文里放什么、输出怎么变成系统能消费的格式、上线后看什么指标。",
+      "core_nodes": [
+        "context-engineering",
+        "structured-output",
+        "observability"
+      ]
+    }
+  ]
+}

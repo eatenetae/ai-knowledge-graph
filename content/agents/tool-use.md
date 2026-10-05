@@ -2,6 +2,7 @@
 id: tool-use
 title: 工具调用
 domain: agents
+pm: core
 summary: 让模型不只会说话，还能真的去查、去算、去改，把活干完。
 prerequisites:
   - ai-agent

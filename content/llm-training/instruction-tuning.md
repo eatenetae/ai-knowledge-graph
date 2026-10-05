@@ -2,6 +2,7 @@
 id: instruction-tuning
 title: 指令微调
 domain: llm-training
+pm: useful
 summary: 用大量「问题加标准回答」把只会续写的模型教成会听指令的助手。
 prerequisites:
   - llm-pretraining

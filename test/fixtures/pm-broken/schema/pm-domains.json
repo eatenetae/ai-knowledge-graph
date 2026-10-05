@@ -1,0 +1,14 @@
+{
+  "$comment": "fixture 覆盖（原理见 test/fixtures/minimal-ok/schema/pm-domains.json）：故意写坏的登记表——ghost-node 悬空、fine-node 被当 core 且登记两次、empty-domain 没有必修、区间 [1,2] 会被 3 个 core 节点冲破。",
+  "core_count_bounds": [1, 2],
+  "domains": [
+    {
+      "id": "domain-one",
+      "label": "测试域一",
+      "order": 1,
+      "core_nodes": ["base-node", "hanging-core", "ghost-node", "fine-node"]
+    },
+    { "id": "domain-two", "label": "测试域二", "order": 2, "core_nodes": ["fine-node"] },
+    { "id": "empty-domain", "label": "空域", "order": 3, "core_nodes": [] }
+  ]
+}

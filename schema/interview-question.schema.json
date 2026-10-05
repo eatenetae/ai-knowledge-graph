@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eatenetae/ai-knowledge-graph/schema/interview-question.schema.json",
+  "title": "AI PM 面试题（frontmatter）",
+  "description": "content/interview/<id>.md 的 frontmatter 契约。一道题 = 问题原文 + 好答案要点 + 常见错误答案 + 追问，正文按这三节写。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "question",
+    "category",
+    "frequency",
+    "nodes",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "x-error": "必须是小写 kebab-case（小写字母、数字，用单个连字符分隔），例如 why-llm-hallucinates",
+      "description": "稳定唯一标识。同时是文件名，一经使用不可更改。"
+    },
+    "question": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 200,
+      "x-error": "问题原文，8-200 个字符，用面试官会问的原话写",
+      "description": "问题的原话，不是主题概括。"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "能力边界",
+        "幻觉与质量",
+        "RAG 与知识库",
+        "Agent",
+        "成本与延迟",
+        "评测",
+        "数据与安全",
+        "项目与协作"
+      ],
+      "x-error": "面试题分组只能是这八类之一",
+      "description": "题库分组。"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": ["高频", "常见", "偶见"],
+      "x-error": "出现频率只能是 高频 / 常见 / 偶见",
+      "description": "在 AI PM 面试中出现的频率。"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "x-error": "复习节点必须是知识节点的 id（小写 kebab-case）"
+      },
+      "uniqueItems": true,
+      "minItems": 1,
+      "maxItems": 8,
+      "x-error": "关联复习节点 id 列表，1-8 个，不可重复；悬空引用构建失败",
+      "description": "答好这道题需要复习哪些知识节点。题目必须挂到节点——不挂靠的题不允许存在。"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "x-error": "必须是 YYYY-MM-DD 格式的日期",
+      "description": "最后更新日期。"
+    }
+  }
+}
