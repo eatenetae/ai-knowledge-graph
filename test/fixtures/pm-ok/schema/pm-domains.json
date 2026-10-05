@@ -1,0 +1,8 @@
+{
+  "$comment": "fixture 覆盖（原理见 test/fixtures/minimal-ok/schema/pm-domains.json）：pm-ok 专测 PM 体系的 happy path——两个能力域、两个 core 节点、一个 useful、一个无标记。",
+  "core_count_bounds": [2, 2],
+  "domains": [
+    { "id": "domain-one", "label": "测试域一", "order": 1, "core_nodes": ["base-node"] },
+    { "id": "domain-two", "label": "测试域二", "order": 2, "core_nodes": ["mid-node"] }
+  ]
+}
