@@ -53,7 +53,7 @@
 
 ## [未发布]
 
-v2 地基（面向 AI 产品经理的第一批改动，详见 `docs/pm-competency.md`）+ v2 前端（PM 优先的站点再定位）。
+v2（面向 AI 产品经理，框架详见 `docs/pm-competency.md`）：地基（内容模型与 PM 标注）+ 内容（案例库、题库与 PM 路径）+ 前端（PM 优先的站点再定位）。
 
 ### 新增
 
@@ -68,6 +68,7 @@ v2 地基（面向 AI 产品经理的第一批改动，详见 `docs/pm-competenc
 - 新增构建校验：案例与面试题的悬空挂靠、重复 id、文件名一致性、能力域登记、pm 枚举；PM 标注的六域覆盖、core 数量区间（25-35）、core↔登记表双向一致、必修节点沿前置边可回溯。全部有测试与故意损坏的 fixture 佐证
 - 新增站点分享卡片：`og:title` / `og:description` / `og:image`（1200×630，源文件 `web/tools/og-image.html`），`meta description` 沿用 v1 文案，v2 前端阶段再按 PM 定位精修
 - 新增 `web/public/favicon.ico`（16/32/48，生成脚本 `web/tools/make-favicon.mjs`）：修复直接请求 `/favicon.ico` 时的 404，内联 SVG 图标声明保留
+- 新增路径 `pm-interview-sprint`（AI PM 面试冲刺，MY-92）：15 步只走 core 必修卡，顺序 = 依赖序 × 面试频率，六个主题块与题库分组一一对应，终点对齐高频考点
 
 ### 内容
 
@@ -75,6 +76,9 @@ v2 地基（面向 AI 产品经理的第一批改动，详见 `docs/pm-competenc
 - 新增样例案例 2 个：`ecommerce-cs-refund-policy`（电商客服 RAG 决策）、`saas-meeting-notes-margin`（SaaS 成本与分级）——作为阶段 2 案例库的质量范本
 - 新增样例面试题 3 道：`why-llm-hallucinates`（高频）、`rag-vs-finetuning-when`（高频）、`ai-feature-margin-rescue`（常见）——覆盖三组分类
 - 新增节点 `prompt-caching`（deployment）：提示缓存。挂在 `prompt-engineering` 下（缓存的对象就是提示里不变的前缀），与 `inference-cost` 相关——首版之后第一个按 CONTRIBUTING 七步流程新增的节点
+- 案例库从样例 2 个扩到 10 个，覆盖全部六大能力域与九类行业（MY-92）：新增 `fintech-model-selection-poc`（金融·模型选型 POC）、`education-tutor-eval-from-zero`（教育·评测从 0 到 1）、`saas-email-assistant-injection`（SaaS·提示注入风控）、`ecommerce-product-copy-review`（电商·文案灰度与人机协同）、`travel-planning-agent`（OTA·Agent 自动化边界）、`legal-contract-review-boundary`（法律·能力边界与人机分工）、`content-platform-data-flywheel`（内容平台·数据飞轮冷启动）、`hr-resume-screening-fairness`（HR·公平与合规）。数字全部标注「虚构但典型」，不冒充真实数据
+- 面试题库从样例 3 道扩到 31 道，八个分组全覆盖（MY-92）：能力边界 3 / 幻觉与质量 4 / RAG 与知识库 5 / Agent 4 / 成本与延迟 3 / 评测 4 / 数据与安全 3 / 项目与协作 5；「项目与协作」全部为 STAR 框架的行为题，答案要点给出四段式结构
+- 重写路径 `pm-ai-capability-boundaries` 为「AI PM 系统课」（MY-92，id 不变、URL 稳定）：从能力边界单域扩展为完整六域主线，20 步，正文新增「本课刻意跳过的卡」一节说明取舍
 
 ### 变更
 
@@ -83,6 +87,7 @@ v2 地基（面向 AI 产品经理的第一批改动，详见 `docs/pm-competenc
 - `graph.json` 新增字段：节点带 `pm`（core / useful / null 三态）、顶层带 `pm_domains`（必修地图的分组依据）、`stats` 带 `pm_core_count` / `pm_useful_count`——均为向后兼容的增量
 - `node.schema.json` 新增可选字段 `pm`（经父任务确认，v2 对节点契约的正式扩展）
 - README 补 v2 定位（AI PM 为第一受众）；CONTRIBUTING 补案例与面试题的贡献说明
+- `test/build.test.js` 的「真实内容仓库零提示」断言收窄（MY-92）：仅对两条 PM 路径豁免「前置依赖跳过」这一种提示——25 个 core 节点里只有 2 个的前置闭包全是 core，「只走 core / 20 步覆盖六域」与「零提示」结构上不可兼得；跳过是两条路径正文里文档化的设计决策。豁免之外的任何提示仍算回归，其余路径与全部节点维持零提示
 
 ## [0.1.0] - 2026-09-30
 

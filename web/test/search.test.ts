@@ -59,7 +59,10 @@ describe('搜索：v2 扩展覆盖案例与面试题', () => {
   it('每道面试题都能被问题原文的片段搜到', () => {
     for (const question of interview.questions) {
       const fragment = question.question.slice(1, 5);
-      const hits = search(items, fragment);
+      // maxHits 给足到不截断：这道题验证「能被搜到」，不验证「排进前八」——
+      // 片段若是高频词（如「 AI 」），扩容后的题库里同片段命中会超过默认
+      // 截断数，目标题被挤出窗口不代表搜不到。
+      const hits = search(items, fragment, items.length);
       const hit = hits.find((candidate) => candidate.kind === 'question' && candidate.id === question.id);
       assert.ok(hit, `搜「${fragment}」应该命中题目「${question.question}」`);
     }

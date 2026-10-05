@@ -65,7 +65,13 @@ describe('冲刺路径识别', () => {
   });
 
   it('没有冲刺路径时返回 null（题库退回路径列表入口）', () => {
-    assert.equal(findSprintPath(paths.paths), null);
+    // 用合成列表验证行为，不对真实仓库断言「没有冲刺路径」——
+    // 冲刺线是 v2 内容批次（MY-92）的交付物，真实数据里出现它是预期。
+    const fake = [
+      { ...paths.paths[0], id: 'some-other-path', title: '普通路径' },
+      { ...paths.paths[0], id: 'pm-systematic-course', title: 'AI PM 系统课' },
+    ];
+    assert.equal(findSprintPath(fake), null);
   });
 });
 
