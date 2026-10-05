@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  分享卡片图（og:image）的源文件。产物是 web/public/og-image.png（1200×630），
+  用无头 Chrome 截图生成（macOS 示例）：
+
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+      --headless=new --disable-gpu --force-device-scale-factor=1 \
+      --hide-scrollbars --window-size=1200,630 \
+      --screenshot=web/public/og-image.png \
+      "file://$PWD/web/tools/og-image.html"
+
+  改了这里的样式就重跑一次截图并提交两处。约束：1200×630、PNG、≤300KB。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+          sans-serif;
+        background: linear-gradient(135deg, #f8fafd 0%, #eef3fb 100%);
+        color: #17223a;
+        display: flex;
+        align-items: center;
+      }
+      .text {
+        margin-left: 96px;
+        max-width: 620px;
+      }
+      .kicker {
+        font-size: 26px;
+        letter-spacing: 6px;
+        color: #2f6df6;
+        font-weight: 600;
+        margin: 0 0 18px;
+      }
+      h1 {
+        font-size: 88px;
+        line-height: 1.15;
+        margin: 0 0 22px;
+        font-weight: 700;
+      }
+      .tagline {
+        font-size: 34px;
+        line-height: 1.5;
+        color: #3d4a63;
+        margin: 0 0 34px;
+      }
+      .meta {
+        font-size: 24px;
+        color: #6b7690;
+        margin: 0;
+      }
+      .meta span {
+        margin-right: 18px;
+      }
+      .meta .dot {
+        color: #c3cbd9;
+      }
+      .graph {
+        margin-left: auto;
+        margin-right: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="text">
+      <p class="kicker">内容驱动的知识网络</p>
+      <h1>AI 知识图谱</h1>
+      <p class="tagline">把 AI 知识讲成一张能走通的地图：<br />先学什么，再学什么，一目了然。</p>
+      <p class="meta">
+        <span>三层讲解</span><span class="dot">·</span><span>前置依赖图谱</span><span class="dot">·</span><span>决策案例</span><span class="dot">·</span><span>面试题库</span>
+      </p>
+    </div>
+    <svg class="graph" width="440" height="560" viewBox="0 0 440 560" aria-hidden="true">
+      <!-- 与站点图标同一幅「三点连线」图形的放大版 -->
+      <g transform="translate(70, 80) scale(9)">
+        <path d="M16 11.5 L8.5 20.5 M16 11.5 L23.5 20.5" stroke="#b8c2d4" stroke-width="2" stroke-linecap="round" />
+        <circle cx="16" cy="7" r="4.5" fill="#2f6df6" />
+        <circle cx="7" cy="24" r="3.5" fill="#14a37f" />
+        <circle cx="25" cy="24" r="3.5" fill="#a855c9" />
+      </g>
+      <g fill="#d3dcea">
+        <circle cx="60" cy="40" r="7" />
+        <circle cx="380" cy="90" r="5" />
+        <circle cx="410" cy="330" r="8" />
+        <circle cx="50" cy="480" r="6" />
+        <circle cx="330" cy="500" r="5" />
+        <circle cx="150" cy="540" r="4" />
+      </g>
+      <g stroke="#dfe6f1" stroke-width="2">
+        <line x1="60" y1="40" x2="215" y2="143" />
+        <line x1="380" y1="90" x2="295" y2="175" />
+        <line x1="410" y1="330" x2="295" y2="300" />
+        <line x1="50" y1="480" x2="133" y2="320" />
+        <line x1="330" y1="500" x2="295" y2="300" />
+        <line x1="150" y1="540" x2="133" y2="320" />
+      </g>
+    </svg>
+  </body>
+</html>
