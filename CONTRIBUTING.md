@@ -9,7 +9,7 @@
 这个项目里**没有数据库，也没有需要手工维护的图**。整个站点是从 `content/` 目录下的一堆 Markdown 文件在构建期生成的：
 
 ```
-content/**/*.md  ──构建──▶  web/public/{graph.json,paths.json,content.json}  ──打包──▶  静态站点
+content/**/*.md  ──构建──▶  web/public/{graph,paths,content,cases,interview}.json  ──打包──▶  静态站点
 ```
 
 所以你更新内容的方式，就是加一个 Markdown 文件、提交、发 PR。图谱、索引、学习路径、节点大小、配色，全都是构建期算出来的——你不需要碰，也不应该去碰。
@@ -52,10 +52,14 @@ npm run dev          # 打开终端里提示的地址
 ```
 ✓ 内容校验通过
 
-  节点 54 个 · 边 163 条（前置 71 / 相关 92） · 领域 12 个 · 路径 7 条
+  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 7 条
+  PM 标注：core 25 个（覆盖 6 个能力域） · useful 26 个
+  案例 2 个 · 面试题 3 道
   已写出 web/public/graph.json
   已写出 web/public/paths.json
   已写出 web/public/content.json
+  已写出 web/public/cases.json
+  已写出 web/public/interview.json
 ```
 
 **改完内容要重跑一次 `node build/index.js` 才会生效**：前端的三个 JSON 是构建产物，不入库，`npm run dev` 只是在读它们。改一个文件刷新页面看不到变化，多半就是忘了这一步。
@@ -114,6 +118,8 @@ updated_at: 2026-09-30
 
 （L3：关键机制、代表论文、可运行代码。写给「要动手用起来」的人。）
 ```
+
+模板里没有 `pm` 字段——它是可选的：v2 起可以给节点标 `pm: core`（AI PM 面试前必须掌握，**同时**要登记进 `schema/pm-domains.json` 对应能力域的 `core_nodes`）或 `pm: useful`（相关但非必须）。不标就表示与 PM 无关，什么都不用写。判断标准见 [`docs/pm-competency.md`](docs/pm-competency.md)。
 
 ### 第 4 步：写三层正文
 
@@ -216,6 +222,106 @@ steps:
 
 写路径的常用手法是**倒着设计**：先定终点，再一路往回推「要走到那儿必须先懂什么」。看看 `content/paths/llm-app-developer.md`，它就是这么做出来的。
 
+## 新增一个案例
+
+案例回答的是「**一个真实的产品决策是怎么做出来的**」。它不是技术方案文档，是判断力的示范：面对什么场景、在哪些选项里权衡、结果如何、教训是什么。v2 起站点面向 AI 产品经理，案例是给他们建立判断力的核心素材。
+
+文件放在 `content/cases/<id>.md`，照抄这个模板：
+
+```markdown
+---
+id: ecommerce-cs-refund-policy
+title: 电商客服机器人：退款政策问答敢不敢交给大模型
+industry: 电商客服
+domains:
+  - capability-boundaries
+  - solution-intuition
+  - evaluation-quality
+nodes:
+  - rag
+  - hallucination
+  - rag-failure-modes
+  - llm-evaluation
+  - context-window
+tags:
+  - RAG
+  - 客服
+sources: []
+updated_at: 2026-10-05
+---
+
+## 场景背景
+
+（谁、在什么产品里、遇到了什么问题。有真实来源的数字注明出处；没有就写明「虚构但典型」。）
+
+## 决策点
+
+（当时要在哪几个选项之间做选择？一列出来。）
+
+## 决策过程
+
+（每一关用了什么知识、怎么权衡的。这一节要让读者看到「思考过程」而不是「结论」。）
+
+## 结果与教训
+
+（结果如何、哪一步走对了、哪一步如果重来会怎么做。教训比成功更值钱。）
+
+## 面试怎么讲
+
+（这个案例在面试里怎么用：一句话怎么概括、重点讲哪两个判断、用什么数字收尾。）
+```
+
+规则：
+
+- **`nodes` 至少 3 个**，必须挂到真实存在的知识节点——「知识是骨架、案例是血肉」，两边必须互相可达，悬空挂靠构建直接失败
+- **`domains` 至少 1 个**，取值只能是 `schema/pm-domains.json` 里登记的六大能力域 id
+- **正文五节一节不能少**（`## 场景背景` / `## 决策点` / `## 决策过程` / `## 结果与教训` / `## 面试怎么讲`）
+- **零术语门槛**：案例正文和节点 L1 一样，写给不写代码的人读。可以提 RAG、微调这类产品级词汇（站内节点会解释它们），但不能出现代码和未解释的工程术语
+- **数字要么有来源，要么标虚构**：来自公开资料就写进 `sources` 并在正文标注；否则在正文写明「虚构但典型的场景」——这是冻结决策，不能含糊
+
+写完跑 `node build/index.js`，按报错改到通过。可以对照 `content/cases/ecommerce-cs-refund-policy.md` 找手感。
+
+## 新增一道面试题
+
+面试题回答的是「**AI PM 面试里真的会被问到的问题**」。题目用面试官的原话写，答案要点讲「好答案长什么样」，而不是给标准答案。
+
+文件放在 `content/interview/<id>.md`：
+
+```markdown
+---
+id: why-llm-hallucinates
+question: 大模型为什么会「一本正经地胡说八道」？你负责的产品里出现这个问题，你会怎么办？
+category: 幻觉与质量
+frequency: 高频
+nodes:
+  - hallucination
+  - next-token-prediction
+  - rag
+  - llm-evaluation
+updated_at: 2026-10-05
+---
+
+## 好答案的要点
+
+（好答案的骨架：先答什么、再答什么、体现什么判断力。用要点列表。）
+
+## 常见的错误答案
+
+（面试里真实出现的错误答法，以及它暴露了什么。这一节比要点更值钱。）
+
+## 追问
+
+（面试官顺着这道题会往下问什么？好的候选人应该能接住。）
+```
+
+规则：
+
+- **`question` 用原话**，不是主题概括。「大模型为什么会胡说八道」是问题，「幻觉问题综述」不是
+- **`category` 八选一**：能力边界 / 幻觉与质量 / RAG 与知识库 / Agent / 成本与延迟 / 评测 / 数据与安全 / 项目与协作
+- **`frequency` 三选一**：高频 / 常见 / 偶见——按你在真实面试里见到的频率标，拿不准就标常见
+- **`nodes` 至少 1 个**，挂到答好这道题需要复习的知识节点（悬空构建失败）
+- **正文三节一节不能少**：`## 好答案的要点` / `## 常见的错误答案` / `## 追问`
+
 ## 依赖关系怎么定
 
 这是整份文档里最需要判断力的一节。
@@ -259,7 +365,7 @@ steps:
 # 第一层：内容校验 + 内容侧单元测试
 node build/index.js          # 校验并写出产物
 node build/index.js --check  # 只校验，不写文件
-npm test                     # 内容侧单元测试（62 项）
+npm test                     # 内容侧单元测试（79 项）
 
 # 第二层：前端单元测试与构建
 cd web
@@ -354,6 +460,30 @@ Schema 里每条规则都配了人话错误信息，照做就行。几个高频�
 ```
 
 带 `⚠` 的只是提示，构建会照常通过。但如果一条路径里攒了一堆这种提示，回去调顺序。
+
+### PM 标注相关的报错
+
+v2 起节点可以标 `pm: core / useful`，core 节点还必须登记进 `schema/pm-domains.json` 的能力域。两边是**双向校验**——只改一边就会看到这些报错：
+
+```
+1) content/rag/rag.md
+   字段 `pm`：节点 `rag` 标了 pm: core，但没有登记进 schema/pm-domains.json 的任何能力域
+   ↳ 必修地图按能力域分组，漏登记的 core 节点用户看不到
+```
+
+```
+1) schema/pm-domains.json
+   字段 `domains[3].core_nodes[0]`：节点 `fine-tuning` 同时登记在「技术方案理解」和「落地方法」两个能力域里
+   ↳ 每个必修节点只归一个域，必修地图才能不重不漏
+```
+
+```
+1) content/evaluation/hallucination.md
+   字段 `pm`：登记表把 `hallucination` 列为「能力边界判断」的必修节点，但它的 frontmatter 没有标 pm: core
+   ↳ 两边要对上：要么节点补 pm: core，要么把它从 core_nodes 里拿掉
+```
+
+案例与面试题的报错样式与节点一致（文件 + 字段 + 原因 + 怎么改），常见的有：挂靠节点悬空、能力域未登记、正文缺小节、id 重复。打 pm 标注的判断标准见 [`docs/pm-competency.md`](docs/pm-competency.md)。
 
 ## 提交规范
 

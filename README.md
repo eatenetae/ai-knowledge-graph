@@ -1,6 +1,6 @@
 # ai-knowledge-graph
 
-AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖路径 + 持续更新。
+AI 知识图谱：内容驱动的 AI 知识网络，三层讲解 + 依赖路径 + 决策案例 + 面试题库。
 
 [![CI](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml/badge.svg)](https://github.com/eatenetae/ai-knowledge-graph/actions/workflows/ci.yml)
 
@@ -8,7 +8,9 @@ AI 知识图谱：内容驱动的 AI 行业知识网络，三层讲解 + 依赖�
 
 **https://eatenetae.github.io/ai-knowledge-graph/**
 
-**内容即数据。** 每个知识点就是 `content/` 下的一个 Markdown 文件，图谱、索引、学习路径全部由构建期自动生成。没有数据库，没有手工维护的大图。
+**v2 定位：面向 AI 产品经理。** 站点正在从「学 AI 的知识地图」再定位为 AI PM 的学习与面试准备工具——理清需要掌握哪些知识（六大能力域 + 节点 `pm` 标注 + 必修地图）、面试前必须学会什么（面试冲刺路径 + 题库）、用具体案例建立判断力（PM 决策型案例库）。其他受众的学习路径保留但从属。
+
+**内容即数据。** 每个知识点就是 `content/` 下的一个 Markdown 文件，图谱、索引、学习路径、案例库、题库全部由构建期自动生成。没有数据库，没有手工维护的大图。
 
 想往图谱里加东西？直接看 **[CONTRIBUTING.md](CONTRIBUTING.md)**——这份 README 讲这个项目是什么，那份讲你怎么改它。
 
@@ -25,10 +27,14 @@ node build/index.js
 ```
 ✓ 内容校验通过
 
-  节点 23 个 · 边 35 条（前置 27 / 相关 8） · 领域 12 个 · 路径 4 条
+  节点 55 个 · 边 165 条（前置 72 / 相关 93） · 领域 12 个 · 路径 7 条
+  PM 标注：core 25 个（覆盖 6 个能力域） · useful 26 个
+  案例 2 个 · 面试题 3 道
   已写出 web/public/graph.json
   已写出 web/public/paths.json
   已写出 web/public/content.json
+  已写出 web/public/cases.json
+  已写出 web/public/interview.json
 ```
 
 校验不通过时，构建**以非零码退出**，并打印可读的错误（见「构建失败长什么样」）。
@@ -47,10 +53,15 @@ content/                  知识点与路径，唯一需要人写的地方
   transformer/
   ...
   paths/                  学习路径定义
+  cases/                  PM 决策案例（v2）
+  interview/              AI PM 面试题（v2）
 schema/
   node.schema.json        节点 frontmatter 的 JSON Schema（字段契约的唯一出处）
   path.schema.json        学习路径的 JSON Schema
+  case.schema.json        案例的 JSON Schema（v2）
+  interview-question.schema.json  面试题的 JSON Schema（v2）
   domains.json            领域登记表（id / 展示名 / 排序），构建期校验与 schema 一致
+  pm-domains.json         PM 六大能力域登记表 + 必修节点（v2），构建期双向校验
 build/
   index.js                构建入口
   lib/
@@ -58,15 +69,17 @@ build/
     schema-validator.js   JSON Schema 校验（报错是中文，字段级定位）
     load-content.js       扫描 content/、读取 schema
     graph.js              建图 + 跨文件检查（悬空 / 环 / 孤立 / 重复）
-    serialize.js          产出 graph.json / paths.json / content.json
+    pm.js                 PM 体系的跨文件校验（挂靠 / 能力域 / 标注约束）（v2）
+    serialize.js          产出五个产物 JSON
     problems.js           问题的统一表示与渲染
 test/                     单元测试 + 故意损坏的 fixture
 web/                      前端（Vite + React + TS），见 web/README.md
 docs/
   content-patrol.md       内容巡检流程：扫什么、按什么标准筛、产出成什么样
+  pm-competency.md        AI PM 六大能力域框架：为什么是这六个、pm 标注怎么打（v2）
 .github/workflows/
   ci.yml                  校验 → 构建 → 浏览器冒烟 → 发布
-CONTRIBUTING.md           怎么改这个项目（新增节点 / 路径 / 依赖怎么定 / 报错怎么办）
+CONTRIBUTING.md           怎么改这个项目（新增节点 / 路径 / 案例 / 面试题 / 依赖怎么定 / 报错怎么办）
 CHANGELOG.md              变更记录与格式约定
 ```
 
@@ -76,7 +89,7 @@ CHANGELOG.md              变更记录与格式约定
 
 | 命令 | 作用 |
 |---|---|
-| `node build/index.js` | 校验并写出 `web/public/` 下的三个产物 |
+| `node build/index.js` | 校验并写出 `web/public/` 下的五个产物 |
 | `node build/index.js --check` | 只校验，不写文件（CI / pre-commit 用） |
 | `node build/index.js --quiet` | 只输出结论 |
 | `npm run build` / `npm run build:graph` | 同上（等价于第一条） |
@@ -110,6 +123,7 @@ L1 放在 frontmatter 是刻意的：**列表页只读 frontmatter 就能渲染�
 | `id` | string | ✅ | 稳定唯一标识。小写 kebab-case，**同时是文件名和图节点 key，一经使用不可更改**（改 id 等于换一个节点）。 |
 | `title` | string | ✅ | 中文标题，2-40 字。 |
 | `domain` | string | ✅ | 所属领域，必须是 `schema/domains.json` 里登记过的 id 之一。决定图谱分组与配色。 |
+| `pm` | string | — | 可选（v2）。`core` = AI PM 面试前必须掌握（还要登记进 `schema/pm-domains.json` 的能力域）；`useful` = 相关但非必须；不写 = 无 PM 标记。见 `docs/pm-competency.md`。 |
 | `summary` | string | ✅ | **L1**，10-100 字，零术语。一句话说清「是什么」。 |
 | `prerequisites` | string[] | ✅ | 前置节点 id 列表，最多 8 个。**构成图谱的边**，含义是「学它之前需要先懂什么」。必须指向已存在的节点，且整体不可成环。没有前置就写 `[]`。 |
 | `related` | string[] | ✅ | 相关节点 id 列表，最多 8 个。**弱关联**，不构成学习路径约束，也不参与环检测。没有就写 `[]`。 |
@@ -121,6 +135,14 @@ L1 放在 frontmatter 是刻意的：**列表页只读 frontmatter 就能渲染�
 
 路径文件的字段见 `schema/path.schema.json`：`id` / `title` / `summary` / `audience` / `steps` / `updated_at`，
 其中 `steps` 是 `{ id, note? }` 的列表，`id` 必须指向已存在的节点。
+
+**案例**（`content/cases/*.md`，v2）的字段见 `schema/case.schema.json`：`id` / `title` / `industry`（行业场景）/
+`domains`（PM 能力域，1-6 个）/ `nodes`（挂靠知识节点，**至少 3 个**，悬空构建失败）/ `tags` / `sources` / `updated_at`。
+正文五节：`## 场景背景` / `## 决策点` / `## 决策过程` / `## 结果与教训` / `## 面试怎么讲`。
+
+**面试题**（`content/interview/*.md`，v2）的字段见 `schema/interview-question.schema.json`：`id` / `question`（问题原话）/
+`category`（八类分组）/ `frequency`（高频 / 常见 / 偶见）/ `nodes`（复习节点，**至少 1 个**）/ `updated_at`。
+正文三节：`## 好答案的要点` / `## 常见的错误答案` / `## 追问`。
 
 ### frontmatter 支持的写法
 
@@ -200,6 +222,10 @@ updated_at: 2026-09-29
 | 循环依赖 | **打印完整的环路径** |
 | 孤立节点 | 既无入边也无出边 |
 | 路径悬空 / 重复步骤 | 指明是第几步 |
+| 案例 / 面试题悬空挂靠 | 指明是第几个节点 + 候选（v2） |
+| 案例能力域未登记 | 列出已登记的能力域（v2） |
+| pm 枚举与 core↔登记表一致性 | 双向指出哪边漂移了（v2） |
+| 能力域覆盖 / core 数量区间 / 必修可回溯 | 指明违反了哪条约束（v2） |
 
 域登记表与 schema 的一致性、路径步骤的前置顺序也会检查——后者只是**提示**，不影响构建。
 
@@ -229,10 +255,13 @@ updated_at: 2026-09-29
 
 构建写到 `web/public/`，**不入库**（构建产物，见 `.gitignore`）：
 
-- **`graph.json`** —— `nodes`（id / title / domain / summary / tags / prerequisites / related / sources / updated_at）、`edges`（`source` / `target` / `type`）、`domains`、`stats`。
+- **`graph.json`** —— `nodes`（id / title / domain / **pm** / summary / tags / prerequisites / related / sources / updated_at）、
+  `edges`（`source` / `target` / `type`）、`domains`、**`pm_domains`**（v2，六大能力域 + 必修节点，必修地图的分组依据）、`stats`。
 - **`paths.json`** —— 学习路径，步骤里已带 `title` 和 `domain`。
 - **`content.json`** —— L2/L3 正文，按节点 id 索引。三层卡片要渲染正文，而 `graph.json` 只有元数据
   （L1 在 `summary` 里），所以正文单独出一份包，前端不必回头解析 Markdown 源文件。
+- **`cases.json`**（v2）—— PM 决策案例，正文五节映射为 `background / decision_points / process / outcome / interview_pitch`。
+- **`interview.json`**（v2）—— 面试题，正文三节映射为 `good_answer / wrong_answers / follow_ups`。
 
 **边的方向**：`source -> target` 表示「先学 `source`，才能学 `target`」。
 所以「聚焦模式」要的依赖子图，是沿 `prerequisite` 边从目标节点**反向**遍历。
@@ -277,7 +306,8 @@ node web/tools/smoke.mjs --dist web/dist
 ```
 
 **内容侧**覆盖：frontmatter 解析（含各种坏写法）、Schema 校验通过/失败、悬空依赖、循环依赖、
-孤立节点、重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构、L2/L3 正文包。
+孤立节点、重复 id、文件名一致性、路径检查、边方向与去重、端到端构建与产物结构、L2/L3 正文包、
+PM 标注与能力域登记表的一致性、案例与面试题的全部校验（各有专门的 fixture）。
 
 其中 `test/fixtures/broken/` 是一个**故意写坏的内容仓库**，覆盖了每一类错误；
 测试会断言错误信息「指明了文件、字段和原因，且不含堆栈或英文断言」。真实内容仓库本身也被当作
@@ -297,6 +327,8 @@ node web/tools/smoke.mjs --dist web/dist
 ## 设计约束
 
 - **内容即数据**：图谱由内容文件生成，禁止手工维护一张大图，禁止用数据库存内容。
+- **面向 AI 产品经理（v2 起）**：首页、导航、内容组织以 PM 为第一受众，面向 PM 的内容零术语门槛（不写代码也读得懂）；其他受众的学习路径保留但从属。
+- **知识与案例、面试题互相可达**：每个案例挂靠 ≥3 个知识节点、每道面试题挂靠 ≥1 个复习节点，悬空挂靠构建失败。
 - **零依赖构建**：`node build/index.js` 直接能跑，不需要 `npm install`。JSON Schema 校验器和
   frontmatter 解析器都是自己实现的——唯一目的是让每条错误信息都能写成「哪个文件、哪个字段、为什么错」。
-- **首版不引入数据库、账户、后端服务**，前端静态部署。
+- **不引入数据库、账户、后端服务**，前端静态部署。

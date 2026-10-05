@@ -53,9 +53,29 @@
 
 ## [未发布]
 
+v2 地基（面向 AI 产品经理的第一批改动，详见 `docs/pm-competency.md`）。
+
+### 新增
+
+- 新增案例内容模型：`schema/case.schema.json` + `content/cases/*.md`，构建产出 `web/public/cases.json`。案例 = 一个产品决策的完整复盘（场景背景 / 决策点 / 决策过程 / 结果与教训 / 面试怎么讲），必须挂靠 ≥3 个知识节点
+- 新增面试题内容模型：`schema/interview-question.schema.json` + `content/interview/*.md`，构建产出 `web/public/interview.json`。每题带好答案要点 / 常见错误答案 / 追问，必须挂靠 ≥1 个复习节点
+- 新增 PM 六大能力域登记表 `schema/pm-domains.json` 与框架文档 `docs/pm-competency.md`（能力边界 / 技术方案 / 成本性能 / 评测质量 / 数据合规 / 落地方法）
+- 新增构建校验：案例与面试题的悬空挂靠、重复 id、文件名一致性、能力域登记、pm 枚举；PM 标注的六域覆盖、core 数量区间（25-35）、core↔登记表双向一致、必修节点沿前置边可回溯。全部有测试与故意损坏的 fixture 佐证
+- 新增站点分享卡片：`og:title` / `og:description` / `og:image`（1200×630，源文件 `web/tools/og-image.html`），`meta description` 沿用 v1 文案，v2 前端阶段再按 PM 定位精修
+- 新增 `web/public/favicon.ico`（16/32/48，生成脚本 `web/tools/make-favicon.mjs`）：修复直接请求 `/favicon.ico` 时的 404，内联 SVG 图标声明保留
+
 ### 内容
 
+- 为全部 55 个节点标注 `pm` 字段：core 25 个（覆盖六大能力域）、useful 26 个、无标记 4 个（偏工程深度：`loss-function` / `parameters-and-hyperparameters` / `encoder-decoder` / `positional-encoding`）
+- 新增样例案例 2 个：`ecommerce-cs-refund-policy`（电商客服 RAG 决策）、`saas-meeting-notes-margin`（SaaS 成本与分级）——作为阶段 2 案例库的质量范本
+- 新增样例面试题 3 道：`why-llm-hallucinates`（高频）、`rag-vs-finetuning-when`（高频）、`ai-feature-margin-rescue`（常见）——覆盖三组分类
 - 新增节点 `prompt-caching`（deployment）：提示缓存。挂在 `prompt-engineering` 下（缓存的对象就是提示里不变的前缀），与 `inference-cost` 相关——首版之后第一个按 CONTRIBUTING 七步流程新增的节点
+
+### 变更
+
+- `graph.json` 新增字段：节点带 `pm`（core / useful / null 三态）、顶层带 `pm_domains`（必修地图的分组依据）、`stats` 带 `pm_core_count` / `pm_useful_count`——均为向后兼容的增量
+- `node.schema.json` 新增可选字段 `pm`（经父任务确认，v2 对节点契约的正式扩展）
+- README 补 v2 定位（AI PM 为第一受众）；CONTRIBUTING 补案例与面试题的贡献说明
 
 ## [0.1.0] - 2026-09-30
 
