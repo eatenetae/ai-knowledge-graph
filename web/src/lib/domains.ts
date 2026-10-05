@@ -21,6 +21,14 @@ const HUES: Record<string, number> = {
   evaluation: 52,
   deployment: 96,
   safety: 8,
+  // v2：PM 六大能力域（必修地图的分组色）。与知识领域不在同一张图上同时出现，
+  // 不用刻意避开知识领域的色相，只要六域互相分得清。
+  'capability-boundaries': 262,
+  'solution-intuition': 190,
+  'cost-performance': 42,
+  'evaluation-quality': 96,
+  'data-compliance': 8,
+  delivery: 320,
 };
 
 const FALLBACK_HUE = 210;

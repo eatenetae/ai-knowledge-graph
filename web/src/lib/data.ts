@@ -1,10 +1,23 @@
-import type { ContentJson, GraphJson, PathsJson, SiteData } from '../types';
+import type {
+  CasesJson,
+  ContentJson,
+  GraphJson,
+  InterviewJson,
+  PathsJson,
+  SiteData,
+} from '../types';
 
 /**
- * 三个产物都由构建期生成，放在 public/ 下随静态站点一起发布。
+ * 五个产物都由构建期生成，放在 public/ 下随静态站点一起发布。
  * 用相对路径取，站点部署在子路径（例如 GitHub Pages 的项目页）也能跑。
  */
-const ARTIFACTS = ['graph.json', 'paths.json', 'content.json'] as const;
+const ARTIFACTS = [
+  'graph.json',
+  'paths.json',
+  'content.json',
+  'cases.json',
+  'interview.json',
+] as const;
 
 export class DataError extends Error {
   constructor(message: string) {
@@ -37,12 +50,16 @@ export async function loadSiteData(): Promise<SiteData> {
   let graph: GraphJson;
   let paths: PathsJson;
   let content: ContentJson;
+  let cases: CasesJson;
+  let interview: InterviewJson;
 
   try {
-    [graph, paths, content] = await Promise.all([
+    [graph, paths, content, cases, interview] = await Promise.all([
       fetchJson<GraphJson>('graph.json'),
       fetchJson<PathsJson>('paths.json'),
       fetchJson<ContentJson>('content.json'),
+      fetchJson<CasesJson>('cases.json'),
+      fetchJson<InterviewJson>('interview.json'),
     ]);
   } catch (error) {
     if (error instanceof DataError) {
@@ -62,8 +79,14 @@ export async function loadSiteData(): Promise<SiteData> {
   if (!content?.nodes || typeof content.nodes !== 'object') {
     throw new DataError('content.json 的结构不对，重新跑一次 `node build/index.js`。');
   }
+  if (!Array.isArray(cases?.cases)) {
+    throw new DataError('cases.json 的结构不对，重新跑一次 `node build/index.js`。');
+  }
+  if (!Array.isArray(interview?.questions)) {
+    throw new DataError('interview.json 的结构不对，重新跑一次 `node build/index.js`。');
+  }
 
-  return { graph, paths, content };
+  return { graph, paths, content, cases, interview };
 }
 
 export { ARTIFACTS };
