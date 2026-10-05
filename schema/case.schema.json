@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eatenetae/ai-knowledge-graph/schema/case.schema.json",
+  "title": "PM 决策案例（frontmatter）",
+  "description": "content/cases/<id>.md 的 frontmatter 契约。案例是「一个产品决策的完整复盘」：场景、决策点、决策过程、结果与教训、面试怎么讲，正文按这五节写。所有数字要么注明公开来源，要么明确标注为虚构但典型。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "industry",
+    "domains",
+    "nodes",
+    "tags",
+    "sources",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 2,
+      "maxLength": 64,
+      "x-error": "必须是小写 kebab-case（小写字母、数字，用单个连字符分隔），例如 ecommerce-cs-bot",
+      "description": "稳定唯一标识。同时是文件名，一经使用不可更改。"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 40,
+      "x-error": "案例标题，4-40 个字符，说清「谁在什么场景做了什么决策」",
+      "description": "展示用标题。"
+    },
+    "industry": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 20,
+      "x-error": "行业/产品场景，2-20 个字符，如：电商客服 / 内容平台 / SaaS",
+      "description": "案例发生的行业或产品场景。"
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "x-error": "PM 能力域必须是 schema/pm-domains.json 里登记的 id（小写 kebab-case）"
+      },
+      "uniqueItems": true,
+      "minItems": 1,
+      "maxItems": 6,
+      "x-error": "所属 PM 能力域 id 列表，1-6 个，不可重复",
+      "description": "这个案例练的是哪些 PM 能力域。取值见 schema/pm-domains.json（六大能力域），构建期校验存在性。"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "x-error": "关联节点必须是知识节点的 id（小写 kebab-case）"
+      },
+      "uniqueItems": true,
+      "minItems": 3,
+      "maxItems": 12,
+      "x-error": "关联知识节点 id 列表，3-12 个，不可重复；悬空引用构建失败",
+      "description": "这个案例用到了哪些知识节点。知识是骨架、案例是血肉，两边必须互相可达——不挂节点的案例不允许存在。"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 20
+      },
+      "uniqueItems": true,
+      "maxItems": 10,
+      "x-error": "自由标签列表，最多 10 个，不可重复",
+      "description": "自由标签，用于检索与筛选。没有就写 []。"
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 10,
+      "x-error": "公开资料链接列表，最多 10 条",
+      "description": "案例中数字的公开来源。数字若非公开资料，正文中必须标注「虚构但典型」。没有就写 []。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "url"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120,
+            "x-error": "资料标题，2-120 个字符"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://\\S+$",
+            "x-error": "必须是 http(s) 开头的完整链接",
+            "description": "公开资料链接。"
+          }
+        }
+      }
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date",
+      "x-error": "必须是 YYYY-MM-DD 格式的日期",
+      "description": "最后更新日期。"
+    }
+  }
+}
