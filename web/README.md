@@ -2,6 +2,9 @@
 
 图谱站点。**纯静态**：构建产物是一堆 HTML/JS/CSS/JSON，丢到任何静态托管上就能跑，没有后端、没有数据库、没有账户。
 
+v2 起站点以 **AI 产品经理为第一受众**：`#/` 是 PM 首页，主导航是必修地图 / 案例库 / 面试准备；
+完整图谱与学习路径收进次级导航，v1 功能一个不删。
+
 ## 跑起来
 
 前端消费的五个 JSON 是**构建产物、不入库**，所以第一次要先跑一次内容构建：
@@ -29,24 +32,44 @@ web/
     types.ts         构建产物的类型（前端只消费，不生成）
     App.tsx          页面骨架、状态、hash 路由
     lib/
-      data.ts        拉取并粗校验三个产物
+      data.ts        拉取并粗校验五个产物
       deps.ts        依赖图索引、依赖子图、拓扑序（聚焦模式的核心）
       layout.ts      确定性分层布局
       markdown.ts    L2/L3 正文的块级解析
-      domains.ts     领域色相
+      domains.ts     领域色相（知识领域 + PM 能力域）
       theme.ts       亮暗主题
-      storage.ts     路径完成进度的本地存储
+      storage.ts     本地存储：路径进度 + 三个勾选清单（必修已掌握 / 案例已读 / 题目已掌握）
       route.ts       hash 路由
+      search.ts      全站搜索（知识点 / 案例 / 面试题的统一索引与打分）
+      pm.ts          PM 视图共用计算：分组顺序、冲刺路径识别、节点 → 案例反向索引
     components/
+      HomeView.tsx         PM 首页：定位语 + 三大入口 + 次级导航（v2）
+      PmMapView.tsx        必修地图：六域分组 + 进度 + 进阶折叠（v2）
+      CasesView.tsx        案例库：筛选列表 + 五节详情 + 双向可达（v2）
+      InterviewView.tsx    面试准备：分组题库 + 详情 + 复习节点（v2）
       GraphView.tsx        图谱：缩放 / 平移 / 拖拽节点 / 键盘导航
-      NodePanel.tsx        三层卡片 + 聚焦模式面板
+      NodePanel.tsx        三层卡片 + 聚焦模式面板 + 「相关案例」区（v2）
       PathView.tsx         路径视图
       SearchBox.tsx        搜索（combobox 键盘契约）
       NodeListFallback.tsx 窄屏降级列表
-      Markdown.tsx         L2/L3 渲染
+      Markdown.tsx         L2/L3 与案例 / 题目正文的渲染
       ThemeToggle.tsx      主题切换
   test/              node --test 直接跑 .ts，不需要额外的测试框架
+  tools/             冒烟测试（smoke.mjs 起服务拉浏览器，cdp-check.mjs 跑断言）
 ```
+
+## 路由
+
+hash 路由，不需要服务端配合（v1 的 `#/n/<id>`、`#/p/<id>` 老链接原样可用）：
+
+| hash | 视图 |
+|---|---|
+| `#/` | PM 首页（v2） |
+| `#/map` | 必修地图（v2） |
+| `#/cases` / `#/c/<case-id>` | 案例列表 / 案例详情（v2） |
+| `#/interview` / `#/q/<question-id>` | 题库 / 题目详情（v2） |
+| `#/graph` / `#/n/<node-id>` | 完整图谱 / 图谱 + 打开节点卡片 |
+| `#/paths` / `#/p/<path-id>` | 路径列表 / 路径详情 |
 
 ## 数据契约
 
@@ -221,9 +244,24 @@ AI PM 面试题，正文三节映射为 `good_answer / wrong_answers / follow_up
 **窄屏降级成列表。** 手机上把 23 个节点挤进一张可缩放的小图，收益是负的。
 列表保留同样的信息（标题 + L1 + 领域），三层卡片照常打开，交互一个不少。
 
+**PM 视图复用 v1 的交互，不重做。** 必修地图 / 案例 / 面试题里的知识点都是
+`#/n/<id>` 跳进图谱 + 三层卡片，讲解只有一份；案例与节点通过 `cases.nodes`
+双向可达（案例详情列关联节点，节点卡片聚合「相关案例」）。
+面试题的「复习这些节点」用 `sortByDependency` 排序——前置在前，照着从上往下复习。
+
+**冲刺路径按内容识别，不写死 id。** 「AI PM 面试冲刺」路径由内容任务产出、
+id 未冻结，前端按标题 / id 里的「冲刺 / sprint」关键词找：找到就深链，找不到
+就退回路径列表，两种情况题库都不缺入口。
+
+**勾选清单只存浏览器。** 必修「已掌握」（`akg:learned`）、案例「已读」（`akg:cases-read`）、
+题目「已掌握」（`akg:mastered`）与 v1 的路径进度（`akg:progress`）同一思路：
+个人的进度不值得为它拉一套账户，存坏了也静默降级成空清单。
+
 ## 无障碍
 
 - 图谱里每个节点都能 Tab 到，方向键在节点间按几何方向移动，回车打开卡片
 - 搜索是标准的 combobox + listbox 键盘契约（上下键移动、回车选中、Esc 关闭）
 - 卡片打开时焦点移入标题，Esc 关闭
 - 所有可聚焦元素都有可见的焦点环；`prefers-reduced-motion` 下关掉过渡
+- PM 视图的入口 / 节点 / 题目 / 勾选全部是原生 `button` / `input`，天然可 Tab、可回车；
+  勾选框沿用 v1 的「视觉隐藏但可聚焦」模式（`.pm-node-check input`）
