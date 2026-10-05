@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import type { ContentEntry, DomainMeta, GraphNode } from '../types';
+import type { CaseItem, ContentEntry, DomainMeta, GraphNode } from '../types';
 import type { GraphIndex } from '../lib/deps';
 import { dependencySubgraph } from '../lib/deps';
 import { domainHue } from '../lib/domains';
@@ -11,9 +11,12 @@ interface NodePanelProps {
   content: ContentEntry | undefined;
   index: GraphIndex;
   domains: DomainMeta[];
+  /** v2：挂靠了这个节点的案例（从案例的 nodes 反向聚合） */
+  relatedCases: CaseItem[];
   focusOn: boolean;
   onToggleFocus: (next: boolean) => void;
   onSelect: (id: string) => void;
+  onOpenCase: (caseId: string) => void;
   onClose: () => void;
 }
 
@@ -29,9 +32,11 @@ export function NodePanel({
   content,
   index,
   domains,
+  relatedCases,
   focusOn,
   onToggleFocus,
   onSelect,
+  onOpenCase,
   onClose,
 }: NodePanelProps) {
   const [showL2, setShowL2] = useState(false);
@@ -191,6 +196,22 @@ export function NodePanel({
           </div>
         )}
       </section>
+
+      {/* v2：这个知识点在哪些真实决策里被用过——知识 → 案例的双向通道 */}
+      {relatedCases.length > 0 && (
+        <section className="panel-cases" aria-label="相关案例">
+          <h3>相关案例</h3>
+          <ul>
+            {relatedCases.map((item) => (
+              <li key={item.id}>
+                <button type="button" onClick={() => onOpenCase(item.id)}>
+                  {item.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <footer className="panel-foot">
         {node.tags.length > 0 && (

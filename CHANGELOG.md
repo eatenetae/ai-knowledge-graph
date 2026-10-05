@@ -53,10 +53,15 @@
 
 ## [未发布]
 
-v2（面向 AI 产品经理）：地基与内容批次（详见 `docs/pm-competency.md`）。
+v2（面向 AI 产品经理，框架详见 `docs/pm-competency.md`）：地基（内容模型与 PM 标注）+ 内容（案例库、题库与 PM 路径）+ 前端（PM 优先的站点再定位）。
 
 ### 新增
 
+- 新增 PM 首页（`#/`）：定位语 + 三大入口（必修地图 / 面试冲刺 / 案例库）；完整图谱与学习路径收进次级导航，v1 功能零删除
+- 新增必修地图视图（`#/map`）：按六大能力域分组展示必修（`pm: core`）节点，每域完成进度与总进度存本地；`pm: useful` 节点收在「进阶」折叠区
+- 新增案例库视图（`#/cases` / `#/c/<id>`）：按能力域 / 行业筛选，详情按五节渲染，关联知识节点可点进图谱；三层卡片新增「相关案例」区（从案例 `nodes` 反向聚合），案例与知识双向可达；已读标记存本地
+- 新增面试准备视图（`#/interview` / `#/q/<id>`）：按八类分组列题 + 出现频率标记，「已掌握」勾选与分组进度存本地；每题带「复习这些节点」——按依赖顺序排列，点一下跳进图谱；「面试冲刺」路径入口按内容识别（标题 / id 含「冲刺 / sprint」即深链，否则进路径列表）
+- 搜索扩展：同一索引覆盖知识点、案例标题与行业、面试题原文，命中分类标注，键盘契约不变
 - 新增案例内容模型：`schema/case.schema.json` + `content/cases/*.md`，构建产出 `web/public/cases.json`。案例 = 一个产品决策的完整复盘（场景背景 / 决策点 / 决策过程 / 结果与教训 / 面试怎么讲），必须挂靠 ≥3 个知识节点
 - 新增面试题内容模型：`schema/interview-question.schema.json` + `content/interview/*.md`，构建产出 `web/public/interview.json`。每题带好答案要点 / 常见错误答案 / 追问，必须挂靠 ≥1 个复习节点
 - 新增 PM 六大能力域登记表 `schema/pm-domains.json` 与框架文档 `docs/pm-competency.md`（能力边界 / 技术方案 / 成本性能 / 评测质量 / 数据合规 / 落地方法）
@@ -77,6 +82,8 @@ v2（面向 AI 产品经理）：地基与内容批次（详见 `docs/pm-compete
 
 ### 变更
 
+- 首页让给 PM 定位：`#/` 从完整图谱变为 PM 首页，完整图谱移到 `#/graph`（`#/n/<id>` 老链接原样可用），顶栏导航改为「PM 视图为主、图谱 / 路径为次级」
+- `meta description` / `og:title` / `og:description` 按 PM 定位精修（v2 地基阶段预留的活）
 - `graph.json` 新增字段：节点带 `pm`（core / useful / null 三态）、顶层带 `pm_domains`（必修地图的分组依据）、`stats` 带 `pm_core_count` / `pm_useful_count`——均为向后兼容的增量
 - `node.schema.json` 新增可选字段 `pm`（经父任务确认，v2 对节点契约的正式扩展）
 - README 补 v2 定位（AI PM 为第一受众）；CONTRIBUTING 补案例与面试题的贡献说明
